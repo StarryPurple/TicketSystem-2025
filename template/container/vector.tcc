@@ -17,7 +17,11 @@ vector<T>::vector(const vector &other) {
   _beg = new T[other.capacity()];
   _end = _beg + other.size();
   _lim = _beg + other.capacity();
-  memcpy(_beg, other._beg, other.size() * sizeof(T));
+  if constexpr(std::is_trivial_v<T> && std::is_move_constructible_v<T>)
+    memcpy(_beg, other._beg, other.size() * sizeof(T));
+  else
+    for(T *here = _beg, there = other._beg; there != other._end; ++here, ++there)
+      new (here) T(*there);
 }
 
 template <class T>
@@ -37,7 +41,11 @@ vector<T>& vector<T>::operator=(const vector &other) {
   clear();
   reserve(other.capacity());
   _end = _beg + other.size();
-  memcpy(_beg, other._beg, other.size() * sizeof(T));
+  if constexpr(std::is_trivial_v<T> && std::is_move_constructible_v<T>)
+    memcpy(_beg, other._beg, other.size() * sizeof(T));
+  else
+    for(T *here = _beg, there = other._beg; there != other._end; ++here, ++there)
+      new (here) T(*there);
   return *this;
 }
 
@@ -141,6 +149,11 @@ void vector<T>::resize(size_t size) {
       new (ptr) T();
   }
   _end = _beg + size;
+}
+
+template <class T>
+T* vector<T>::data() {
+  return _beg;
 }
 
 

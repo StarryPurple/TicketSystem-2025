@@ -14,24 +14,52 @@ public:
     friend vector;
   public:
     iterator(): _container(nullptr), _ptr(nullptr) {}
-    iterator operator+(size_t n) const {return {_container, _ptr + n};}
-    iterator operator-(size_t n) const {return {_container, _ptr - n};}
-    iterator& operator+=(size_t n) {_ptr += n; return *this;}
-    iterator& operator-=(size_t n) {_ptr -= n; return *this;}
+    iterator operator+(size_t n) const {
+      return {_container, _ptr + n};
+    }
+    iterator operator-(size_t n) const {
+      return {_container, _ptr - n};
+    }
+    iterator& operator+=(size_t n) {
+      _ptr += n; return *this;
+    }
+    iterator& operator-=(size_t n) {
+      _ptr -= n; return *this;
+    }
     size_t operator-(const iterator& other) const {
       if(!_container || _container != other._container) throw invalid_iterator();
       return _ptr - other._ptr;
     }
-    iterator operator++(int) {auto tmp = *this; ++_ptr; return tmp;}
-    iterator operator--(int) {auto tmp = *this; --_ptr; return tmp;}
-    iterator& operator++() {++_ptr; return *this;}
-    iterator& operator--() {--_ptr; return *this;}
-    T& operator*() const {return *_ptr;}
-    T* operator->() const noexcept {return _ptr;}
-    bool operator==(const iterator &other) const {return _container == other._container && _ptr == other._ptr;}
-    bool operator==(const const_iterator &other) const {return _container == other._container && _ptr == other._ptr;}
-    bool operator!=(const iterator &other) const {return _container != other._container || _ptr != other._ptr;}
-    bool operator!=(const const_iterator &other) const {return _container != other._container || _ptr != other._ptr;}
+    iterator operator++(int) {
+      auto tmp = *this; ++_ptr; return tmp;
+    }
+    iterator operator--(int) {
+      auto tmp = *this; --_ptr; return tmp;
+    }
+    iterator& operator++() {
+      ++_ptr; return *this;
+    }
+    iterator& operator--() {
+      --_ptr; return *this;
+    }
+    T& operator*() const {
+      return *_ptr;
+    }
+    T* operator->() const noexcept {
+      return _ptr;
+    }
+    bool operator==(const iterator &other) const {
+      return _container == other._container && _ptr == other._ptr;
+    }
+    bool operator==(const const_iterator &other) const {
+      return _container == other._container && _ptr == other._ptr;
+    }
+    bool operator!=(const iterator &other) const {
+      return _container != other._container || _ptr != other._ptr;
+    }
+    bool operator!=(const const_iterator &other) const {
+      return _container != other._container || _ptr != other._ptr;
+    }
   private:
     const vector *_container;
     T* _ptr;
@@ -43,24 +71,52 @@ public:
   public:
     const_iterator(): _container(nullptr), _ptr(nullptr) {}
     const_iterator(const iterator &iter): _container(iter._container), _ptr(iter._ptr) {}
-    iterator operator+(size_t n) const {return {_container, _ptr + n};}
-    iterator operator-(size_t n) const {return {_container, _ptr - n};}
-    iterator& operator+=(size_t n) {_ptr += n; return *this;}
-    iterator& operator-=(size_t n) {_ptr -= n; return *this;}
+    iterator operator+(size_t n) const {
+      return {_container, _ptr + n};
+    }
+    iterator operator-(size_t n) const {
+      return {_container, _ptr - n};
+    }
+    iterator& operator+=(size_t n) {
+      _ptr += n; return *this;
+    }
+    iterator& operator-=(size_t n) {
+      _ptr -= n; return *this;
+    }
     size_t operator-(const const_iterator& other) const {
       if(!_container || _container != other._container) throw invalid_iterator();
       return _ptr - other._ptr;
     }
-    const_iterator operator++(int) {auto tmp = *this; ++_ptr; return tmp;}
-    const_iterator operator--(int) {auto tmp = *this; --_ptr; return tmp;}
-    const_iterator& operator++() {++_ptr; return *this;}
-    const_iterator& operator--() {--_ptr; return *this;}
-    const T& operator*() const {return *_ptr;}
-    const T* operator->() const noexcept {return _ptr;}
-    bool operator==(const iterator &other) const {return _container == other._container && _ptr == other._ptr;}
-    bool operator==(const const_iterator &other) const {return _container == other._container && _ptr == other._ptr;}
-    bool operator!=(const iterator &other) const {return _container != other._container || _ptr != other._ptr;}
-    bool operator!=(const const_iterator &other) const {return _container != other._container || _ptr != other._ptr;}
+    const_iterator operator++(int) {
+      auto tmp = *this; ++_ptr; return tmp;
+    }
+    const_iterator operator--(int) {
+      auto tmp = *this; --_ptr; return tmp;
+    }
+    const_iterator& operator++() {
+      ++_ptr; return *this;
+    }
+    const_iterator& operator--() {
+      --_ptr; return *this;
+    }
+    const T& operator*() const {
+      return *_ptr;
+    }
+    const T* operator->() const noexcept {
+      return _ptr;
+    }
+    bool operator==(const iterator &other) const {
+      return _container == other._container && _ptr == other._ptr;
+    }
+    bool operator==(const const_iterator &other) const {
+      return _container == other._container && _ptr == other._ptr;
+    }
+    bool operator!=(const iterator &other) const {
+      return _container != other._container || _ptr != other._ptr;
+    }
+    bool operator!=(const const_iterator &other) const {
+      return _container != other._container || _ptr != other._ptr;
+    }
   private:
     const vector *_container;
     T* _ptr;
@@ -74,13 +130,27 @@ public:
   vector& operator=(const vector &other);
   vector& operator=(vector &&other);
 
-  size_t size() const {return _end - _beg;}
-  size_t capacity() const {return _lim - _beg;}
-  bool empty() const {return _beg == _end;}
-  iterator begin() const {return {this, _beg};}
-  iterator end() const {return {this, _end};}
-  const_iterator cbegin() const {return {this, _beg};}
-  const_iterator cend() const {return {this, _end};}
+  size_t size() const {
+    return _end - _beg;
+  }
+  size_t capacity() const {
+    return _lim - _beg;
+  }
+  bool empty() const {
+    return _beg == _end;
+  }
+  iterator begin() const {
+    return {this, _beg};
+  }
+  iterator end() const {
+    return {this, _end};
+  }
+  const_iterator cbegin() const {
+    return {this, _beg};
+  }
+  const_iterator cend() const {
+    return {this, _end};
+  }
 
   T& at(const size_t &pos) {
     if(pos >= size()) throw index_out_of_bound();
@@ -167,6 +237,7 @@ public:
   }
   void reserve(size_t capacity);
   void resize(size_t size);
+  T* data();
 
 private:
   T *_beg, *_end, *_lim;
