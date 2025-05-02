@@ -1,21 +1,16 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.24)
 project(TicketSystem)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
+# set(CMAKE_POLICY_DEFAULT_CMP0135 NEW)
 
-add_library(container_lib main.cpp)
-target_include_directories(
-    container_lib PUBLIC
-    include/container
-)
-add_library(buffer_lib main.cpp)
-target_include_directories(
-    buffer_lib PUBLIC
-    include/buffer
-)
+enable_testing()
+
+add_subdirectory(template)
+add_subdirectory(include)
+add_subdirectory(src)
+add_subdirectory(test)
+
 add_executable(code main.cpp)
-target_link_libraries(
-    code PRIVATE
-    container_lib
-    buffer_lib
-)
+
+target_link_libraries(code PRIVATE IncludeModule)

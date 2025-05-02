@@ -1,1 +1,0 @@
-A thread-safe buffer pool manager.
