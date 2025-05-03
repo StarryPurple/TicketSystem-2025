@@ -1,7 +1,6 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include "thread_pool.h"
-#include "task_scheduler.h"
 
 namespace ism = insomnia;
 namespace insomnia {

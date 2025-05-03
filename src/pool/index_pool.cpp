@@ -2,48 +2,56 @@
 
 namespace insomnia::disk {
 
-IndexPool::IndexPool(const std::string &file) : pool_(file, std::ios::in | std::ios::out | std::ios::binary) {
+void IndexPool::open(const std::filesystem::path &file) {
+  // treated always succeeded
+  if(pool_.is_open()) close();
+  pool_.open(file, std::ios::in | std::ios::out | std::ios::binary);
   if(pool_.is_open()) {
+    pool_.seekg(0);
     pool_.read(reinterpret_cast<char*>(&capacity_), sizeof(capacity_));
-    int size = 0;
+    size_t size = 0;
     pool_.read(reinterpret_cast<char*>(&size), sizeof(size));
     unallocated_.resize(size);
     pool_.read(reinterpret_cast<char*>(unallocated_.data()), size * sizeof(size_t));
   } else {
     pool_.close();
     pool_.open(file, std::ios::out | std::ios::binary);
+    pool_.close();
+    pool_.open(file, std::ios::in | std::ios::out | std::ios::binary);
     capacity_ = 0;
-    int size = 0;
+    size_t size = 0;
+    pool_.seekp(0);
     pool_.write(reinterpret_cast<char*>(&capacity_), sizeof(capacity_));
     pool_.write(reinterpret_cast<char*>(&size), sizeof(size));
+    pool_.flush();
   }
 }
 
-IndexPool::~IndexPool() {
+void IndexPool::close() {
+  if(!pool_.is_open()) return;
   pool_.seekp(0);
   pool_.write(reinterpret_cast<char*>(&capacity_), sizeof(capacity_));
-  int size = unallocated_.size();
+  size_t size = unallocated_.size();
   pool_.write(reinterpret_cast<char*>(&size), sizeof(size));
   pool_.write(reinterpret_cast<char*>(unallocated_.data()), size * sizeof(size_t));
+  pool_.flush();
   pool_.close();
+  capacity_ = 0;
+  unallocated_.resize(0);
 }
 
-size_t IndexPool::allocate() {
+
+IndexPool::index_t IndexPool::allocate() {
   if(!unallocated_.empty()) {
-    int res = unallocated_.back();
+    index_t res = unallocated_.back();
     unallocated_.pop_back();
     return res;
   }
-  return ++capacity_;
+  return capacity_++;
 }
 
-void IndexPool::deallocate(size_t index) {
+void IndexPool::deallocate(index_t index) {
   unallocated_.push_back(index);
 }
-
-
-
-
-
 
 }

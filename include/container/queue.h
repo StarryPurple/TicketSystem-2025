@@ -20,8 +20,8 @@ public:
   void push(T &&val);
   template <class ...Args> requires std::is_constructible_v<T, Args...>
   void emplace(Args &&...args);
-  const T& front() { return _data[_lft]; }
-  T pop();
+  T& front() { return _data[_lft]; }
+  void pop();
   size_t size() const { return (_data.capacity() + _rht - _lft) % _data.capacity(); }
   bool empty() const { return _lft == _rht; }
   void clear() { _data.clear(); _lft = 0; _rht = 0; }

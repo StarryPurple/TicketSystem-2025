@@ -14,42 +14,36 @@
 
 namespace insomnia::concurrent {
 /**
- * @brief thread pool specified for id-queue and read/write relationship.
+ * @brief thread pool that supports id-queue.
  */
 class TaskScheduler {
-  static constexpr auto GROUP_NUM = 16;
-  static constexpr auto MAX_ACTIVE_TASK_COUNT = 3 * std::thread::hardware_concurrency();
-  struct TaskGroup {
-    std::mutex latch;
-    std::condition_variable cv;
-    cntr::queue<std::function<void()>> readers, writers;
-    std::atomic<size_t> last_write_id{0}, next_write_id{1};
-    bool is_writing{false}; // might be false positive
-  };
 public:
-  explicit TaskScheduler(size_t thread_num = std::thread::hardware_concurrency());
-  ~TaskScheduler() { stop(); }
+  explicit TaskScheduler(size_t thread_num = 16);
+  ~TaskScheduler();
   TaskScheduler(const TaskScheduler&) = delete;
   TaskScheduler(TaskScheduler&&) = delete;
   TaskScheduler& operator=(const TaskScheduler&) = delete;
   TaskScheduler& operator=(TaskScheduler&&) = delete;
 
   template <class F, class ...Args>
-  auto schedule(size_t id, bool is_write, F &&f, Args &&...args) -> std::future<std::result_of_t<F(Args...)>>;
-  void stop();
+  auto schedule(size_t id, F &&f, Args &&...args) -> std::future<std::result_of_t<F(Args...)>>;
+  // No more task enqueue is allowed.
+  // The existing tasks will go on executing and finish earlier than the destruction of TaskScheduler.
+  void close_queue();
+  // close queues and wait for all tasks to be finished.
+  void close();
 
 private:
+  struct TaskQueue {
+    ism::cntr::queue<std::function<void()>> queue;
+    std::mutex latch;
+    std::condition_variable cv;
+  };
+  void loop(TaskQueue &queue);
 
-  void work();
-  bool process_group(TaskGroup &group);
-
-  static void atomic_max(std::atomic<size_t> &cnt, size_t val);
-
-  std::atomic<bool> stopped_;
-  cntr::vector<std::thread> workers_; // handle write requests
-  TaskGroup groups_[GROUP_NUM];
-  std::atomic<int> last_group_idx_{0};
-  ThreadPool reader_pool_;
+  ism::cntr::vector<TaskQueue> task_queues_;
+  ism::cntr::vector<std::thread> workers_;
+  std::atomic<bool> closed;
 };
 
 

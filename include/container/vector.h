@@ -122,7 +122,9 @@ public:
     T* _ptr;
     const_iterator(const vector *container, T *ptr): _container(container), _ptr(ptr) {}
   };
-  explicit vector(size_t size = 0);
+  vector();
+  explicit vector(size_t size) requires std::is_default_constructible_v<T>;
+  vector(size_t size, const T &t) requires std::is_copy_constructible_v<T>;
   vector(const vector &other);
   vector(vector &&other);
   ~vector();
@@ -236,7 +238,8 @@ public:
     _end = _beg;
   }
   void reserve(size_t capacity);
-  void resize(size_t size);
+  void resize(size_t size) requires std::is_default_constructible_v<T>;
+  void resize(size_t size, const T &t) requires std::is_copy_constructible_v<T>;
   T* data();
 
 private:

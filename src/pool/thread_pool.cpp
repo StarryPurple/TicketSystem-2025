@@ -13,7 +13,8 @@ ThreadPool::ThreadPool(size_t thread_count) : closed(false) {
             [this] { return this->closed || !this->tasks_.empty(); });
           if(this->closed && this->tasks_.empty()) return;
           if(this->tasks_.empty()) continue;
-          task = std::move(tasks_.pop());
+          task = std::move(tasks_.front());
+          tasks_.pop();
         }
         task();
       }

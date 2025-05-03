@@ -58,19 +58,16 @@ void queue<T>::push(T &&val) {
 template <class T>
 template <class... Args> requires std::is_constructible_v<T, Args...>
 void queue<T>::emplace(Args &&... args) {
-  new (&_data[_rht]) T(std::forward<Args>(args)...);
+  _data.emplace(_rht, std::forward<Args>(args)...);
   _rht = (_rht + 1) % _data.capacity();
   if((_lft + _data.capacity() - _rht) % _data.capacity() == 1)
     reserve(_data.capacity() * 2);
 }
 
 template <class T>
-T queue<T>::pop() {
-  T res = std::move(_data[_lft]);
+void queue<T>::pop() {
+  if(empty()) throw container_is_empty();
   _lft = (_lft + 1) % _data.capacity();
-  if((_lft + _data.capacity() - _rht) % _data.capacity() == 1)
-    reserve(_data.capacity() * 2);
-  return res;
 }
 
 template <class T>
