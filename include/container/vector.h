@@ -163,11 +163,9 @@ public:
     return *(_beg + pos);
   }
   T& operator[](const size_t &pos) {
-    if(pos >= size()) throw index_out_of_bound();
     return *(_beg + pos);
   }
   const T& operator[](const size_t &pos) const {
-    if(pos >= size()) throw index_out_of_bound();
     return *(_beg + pos);
   }
   T& front() {

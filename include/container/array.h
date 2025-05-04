@@ -42,8 +42,8 @@ public:
     }
     bool operator==(const iterator &other) const { return container_ == other.container_ && idx_ == other.idx_; }
     bool operator!=(const iterator &other) const { return container_ != other.container_ || idx_ != other.idx_; }
-    bool operator==(const const_iterator &other) const { return container_ == other.container_ && idx_ == other.idx_; }
-    bool operator!=(const const_iterator &other) const { return container_ != other.container_ || idx_ != other.idx_; }
+    bool operator==(const const_iterator &other) const { return container_ == other._container && idx_ == other._idx; }
+    bool operator!=(const const_iterator &other) const { return container_ != other._container || idx_ != other._idx; }
     array *container_{nullptr};
     size_t idx_{0};
   };
@@ -52,7 +52,7 @@ public:
     friend array;
   public:
     const_iterator() = default;
-    const_iterator(const iterator &iter) : container_(iter.container_), idx_(iter.idx_) {}
+    const_iterator(const iterator &iter) : container_(iter._container), idx_(iter._idx) {}
   private:
     const_iterator(const array *container, size_t idx) : container_(container), idx_(idx) {}
     const_iterator& operator++() { ++idx_; return *this; }
@@ -67,8 +67,8 @@ public:
       if(idx_ >= size) throw invalid_iterator();
       return &container_->_data[idx_];
     }
-    bool operator==(const iterator &other) const { return container_ == other.container_ && idx_ == other.idx_; }
-    bool operator!=(const iterator &other) const { return container_ != other.container_ || idx_ != other.idx_; }
+    bool operator==(const iterator &other) const { return container_ == other._container && idx_ == other._idx; }
+    bool operator!=(const iterator &other) const { return container_ != other._container || idx_ != other._idx; }
     bool operator==(const const_iterator &other) const { return container_ == other.container_ && idx_ == other.idx_; }
     bool operator!=(const const_iterator &other) const { return container_ != other.container_ || idx_ != other.idx_; }
     const array *container_{nullptr};
@@ -122,44 +122,44 @@ public:
   public:
     iterator() = default;
   private:
-    iterator(const array *container, size_t idx) : container_(container), idx_(idx) {}
-    iterator& operator++() { ++idx_; return *this; }
-    iterator& operator--() { --idx_; return *this; }
-    iterator operator++(int) { auto tmp = *this; ++idx_; return tmp; }
-    iterator operator--(int) { auto tmp = *this; --idx_; return tmp; }
+    iterator(const array *container, size_t idx) : _container(container), _idx(idx) {}
+    iterator& operator++() { ++_idx; return *this; }
+    iterator& operator--() { --_idx; return *this; }
+    iterator operator++(int) { auto tmp = *this; ++_idx; return tmp; }
+    iterator operator--(int) { auto tmp = *this; --_idx; return tmp; }
     char& operator*() {
-      if(idx_ >= size) throw invalid_iterator();
-      return container_->_data[idx_];
+      if(_idx >= size) throw invalid_iterator();
+      return _container->_data[_idx];
     }
-    bool operator==(const iterator &other) const { return container_ == other.container_ && idx_ == other.idx_; }
-    bool operator!=(const iterator &other) const { return container_ != other.container_ || idx_ != other.idx_; }
-    bool operator==(const const_iterator &other) const { return container_ == other.container_ && idx_ == other.idx_; }
-    bool operator!=(const const_iterator &other) const { return container_ != other.container_ || idx_ != other.idx_; }
-    array *container_{nullptr};
-    size_t idx_{0};
+    bool operator==(const iterator &other) const { return _container == other._container && _idx == other._idx; }
+    bool operator!=(const iterator &other) const { return _container != other._container || _idx != other._idx; }
+    bool operator==(const const_iterator &other) const { return _container == other._container && _idx == other._idx; }
+    bool operator!=(const const_iterator &other) const { return _container != other._container || _idx != other._idx; }
+    array *_container{nullptr};
+    size_t _idx{0};
   };
 
   class const_iterator {
     friend array;
   public:
     const_iterator() = default;
-    const_iterator(const iterator &iter) : container_(iter.container_), idx_(iter.idx_) {}
+    const_iterator(const iterator &iter) : _container(iter._container), _idx(iter._idx) {}
   private:
-    const_iterator(const array *container, size_t idx) : container_(container), idx_(idx) {}
-    const_iterator& operator++() { ++idx_; return *this; }
-    const_iterator& operator--() { --idx_; return *this; }
-    const_iterator operator++(int) { auto tmp = *this; ++idx_; return tmp; }
-    const_iterator operator--(int) { auto tmp = *this; --idx_; return tmp; }
+    const_iterator(const array *container, size_t idx) : _container(container), _idx(idx) {}
+    const_iterator& operator++() { ++_idx; return *this; }
+    const_iterator& operator--() { --_idx; return *this; }
+    const_iterator operator++(int) { auto tmp = *this; ++_idx; return tmp; }
+    const_iterator operator--(int) { auto tmp = *this; --_idx; return tmp; }
     const char& operator*() const {
-      if(idx_ >= size) throw invalid_iterator();
-      return container_->operator[](idx_);
+      if(_idx >= size) throw invalid_iterator();
+      return _container->operator[](_idx);
     }
-    bool operator==(const iterator &other) const { return container_ == other.container_ && idx_ == other.idx_; }
-    bool operator!=(const iterator &other) const { return container_ != other.container_ || idx_ != other.idx_; }
-    bool operator==(const const_iterator &other) const { return container_ == other.container_ && idx_ == other.idx_; }
-    bool operator!=(const const_iterator &other) const { return container_ != other.container_ || idx_ != other.idx_; }
-    const array *container_{nullptr};
-    size_t idx_{0};
+    bool operator==(const iterator &other) const { return _container == other._container && _idx == other._idx; }
+    bool operator!=(const iterator &other) const { return _container != other._container || _idx != other._idx; }
+    bool operator==(const const_iterator &other) const { return _container == other._container && _idx == other._idx; }
+    bool operator!=(const const_iterator &other) const { return _container != other._container || _idx != other._idx; }
+    const array *_container{nullptr};
+    size_t _idx{0};
   };
 
   iterator begin() { return iterator(this, 0); }

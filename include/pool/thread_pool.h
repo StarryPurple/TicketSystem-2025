@@ -18,6 +18,8 @@ namespace cntr = container;
 /**
  * @brief a thread pool that can manage multithread tasks.
  *
+ * @TODO Change the queue to deque to enable task stealing.
+ *
  * @warning doesn't support id-queued task scheduling. The execution order has no guarantee.
  */
 class ThreadPool {

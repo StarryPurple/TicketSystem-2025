@@ -5,10 +5,6 @@
 
 #include "container/config.h"
 
-namespace insomnia {
-namespace disk {}
-}
-
 #ifndef BASIC_PAGE_SIZE
 #define BASIC_PAGE_SIZE 4096
 #endif

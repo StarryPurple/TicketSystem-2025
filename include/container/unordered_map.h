@@ -13,8 +13,6 @@ template <
   class Hash = std::hash<KeyT>,
   class KeyEqual = std::equal_to<KeyT>>
 class unordered_map {
-  static_assert(std::is_copy_constructible_v<KeyT> && std::is_copy_constructible_v<ValueT>);
-  static_assert(std::is_default_constructible_v<ValueT>);
 public:
   using value_type = std::pair<const KeyT, ValueT>;
   class iterator;
@@ -23,7 +21,7 @@ public:
 private:
   struct NodeBase {
     NodeBase *t_nxt{nullptr}, *t_prv{nullptr}, *b_nxt{nullptr}, *b_prv{nullptr};
-    virtual NodeBase* clone() { return new NodeBase; }
+    // virtual NodeBase* clone() { return new NodeBase; }
     virtual ~NodeBase() = default;
   };
   struct Node : NodeBase {
@@ -32,16 +30,16 @@ private:
     : NodeBase(), value_pair(_value_pair) {}
     Node(value_type &&_value_pair)
       : NodeBase(), value_pair(std::move(_value_pair)) {}
-    virtual NodeBase* clone() override { return new Node(value_pair); }
+    // virtual NodeBase* clone() override { return new Node(value_pair); }
     virtual ~Node() override = default;
   };
 
 public:
 
   unordered_map();
-  unordered_map(const unordered_map &other);
+  // unordered_map(const unordered_map &other);
   unordered_map(unordered_map &&other);
-  unordered_map& operator=(const unordered_map &other);
+  // unordered_map& operator=(const unordered_map &other);
   unordered_map& operator=(unordered_map &&other);
   ~unordered_map();
 

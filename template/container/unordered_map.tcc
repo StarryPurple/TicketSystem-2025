@@ -16,6 +16,7 @@ unordered_map<KeyT, ValueT, Hash, KeyEqual>::unordered_map() {
   _header->t_prv = _header->t_nxt = _header;
 }
 
+/*
 template <class KeyT, class ValueT, class Hash, class KeyEqual>
 unordered_map<KeyT, ValueT, Hash, KeyEqual>::unordered_map(const unordered_map &other) {
   _bucket_size = other._bucket_size;
@@ -38,6 +39,7 @@ unordered_map<KeyT, ValueT, Hash, KeyEqual>::unordered_map(const unordered_map &
   _header->t_prv = t_curr;
   t_curr->t_nxt = _header;
 }
+*/
 
 template <class KeyT, class ValueT, class Hash, class KeyEqual>
 unordered_map<KeyT, ValueT, Hash, KeyEqual>::unordered_map(unordered_map &&other) {
@@ -51,6 +53,7 @@ unordered_map<KeyT, ValueT, Hash, KeyEqual>::unordered_map(unordered_map &&other
   other._bucket_size = 0;
 }
 
+/*
 template <class KeyT, class ValueT, class Hash, class KeyEqual>
 unordered_map<KeyT, ValueT, Hash, KeyEqual>&
   unordered_map<KeyT, ValueT, Hash, KeyEqual>::operator=(const unordered_map &other) {
@@ -79,6 +82,7 @@ unordered_map<KeyT, ValueT, Hash, KeyEqual>&
   t_curr->t_nxt = _header;
   return *this;
 }
+*/
 
 template <class KeyT, class ValueT, class Hash, class KeyEqual>
 unordered_map<KeyT, ValueT, Hash, KeyEqual>&
