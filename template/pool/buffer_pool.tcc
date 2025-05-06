@@ -211,7 +211,7 @@ BufferPool<T, align>::BufferPool(const std::string &file_prefix, size_t k_param,
 }
 
 template <class T, size_t align>
-bool BufferPool<T, align>::deallocate(page_id_t page_id) {
+bool BufferPool<T, align>::dealloc(page_id_t page_id) {
   std::unique_lock lock(bp_latch_);
   if (auto it = page_map_.find(page_id); it != page_map_.end()) {
     if (frames_[it->second].pin_count_.load() > 0)
@@ -241,8 +241,12 @@ BufferPool<T, align>::get_reader(page_id_t page_id) {
       free_frames_.pop_back();
     } else {
       // HDD time delay
-      if(!replacer_cv_.wait_for(lock, std::chrono::milliseconds(100), [this] { return replacer_.has_evictable_frame(); }))
-        throw pool_overflow("Buffer pool frames full for 100ms."); // Yes I prefer exception more than optional right
+      /*
+      if(!replacer_cv_.wait_for(lock, std::chrono::milliseconds(20), [this] { return replacer_.has_evictable_frame(); }))
+        return Reader(); // empty vessel.
+        // throw pool_overflow("Buffer pool frames full for 20ms."); // Yes I prefer exception more than optional right
+      */
+      replacer_cv_.wait(lock, [this] { return replacer_.has_evictable_frame(); });
       frame_id = replacer_.evict();
 
       // flush old data
@@ -285,8 +289,12 @@ typename BufferPool<T, align>::Writer BufferPool<T, align>::get_writer(page_id_t
       free_frames_.pop_back();
     } else {
       // HDD time delay
-      if(!replacer_cv_.wait_for(lock, std::chrono::milliseconds(100), [this] { return replacer_.has_evictable_frame(); }))
-        throw pool_overflow("Buffer pool frames full for 100ms."); // Yes I prefer exception more than optional right
+      /*
+      if(!replacer_cv_.wait_for(lock, std::chrono::milliseconds(20), [this] { return replacer_.has_evictable_frame(); }))
+        return Writer(); // empty vessel
+        // throw pool_overflow("Buffer pool frames full for 20ms."); // Yes I prefer exception more than optional right
+      */
+      replacer_cv_.wait(lock, [this] { return replacer_.has_evictable_frame(); });
       frame_id = replacer_.evict();
 
       // flush old data
