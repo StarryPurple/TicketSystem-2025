@@ -9,7 +9,7 @@ template <class T>
 void fstream<T>::open(const std::filesystem::path &file) {
   std::unique_lock lock(disk_io_latch_);
   if(is_open_locked()) close_locked();
-  std::filesystem::path index_file = file.parent_path() / ("." + file.filename().string() + ".idx");
+  std::filesystem::path index_file = file.parent_path() / (file.filename().string() + ".idx");
   basic_fstream_.open(file, std::ios::in | std::ios::out | std::ios::binary);
   index_pool_.open(index_file);
   if(!basic_fstream_.is_open()) {
@@ -37,7 +37,8 @@ template <class T>
 void fstream<T>::write(index_t index, const T *data) {
   std::unique_lock lock(disk_io_latch_);
   size_t offset = index * SIZE_T;
-  if(offset > file_size_) reserve_locked(offset * 2);
+  // in accordance with the codes of read().
+  if(offset >= file_size_) reserve_locked(offset * 2 + SIZE_T);
   basic_fstream_.seekp(offset, std::ios::beg);
   basic_fstream_.write(reinterpret_cast<const char*>(data), SIZE_T);
 }
@@ -46,7 +47,9 @@ template <class T>
 void fstream<T>::read(index_t index, T *data) {
   std::unique_lock lock(disk_io_latch_);
   size_t offset = index * SIZE_T;
-  if(offset > file_size_) reserve_locked(offset * 2);
+  // read at the end of file will lead to a std::fstream bad status.
+  // consider file_size_ = offset = 0 here.
+  if(offset >= file_size_) reserve_locked(offset * 2 + SIZE_T);
   basic_fstream_.seekg(offset, std::ios::beg);
   basic_fstream_.read(reinterpret_cast<char*>(data), SIZE_T);
 }

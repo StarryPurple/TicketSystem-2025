@@ -35,7 +35,7 @@ public:
   void unpin(index_t index);
   void pin(index_t index);
   size_t evictable_cnt() const { return size_; }
-  bool has_evictable_frame() const { return size_ == 0; }
+  bool has_evictable_frame() const { return size_ != 0; }
 
   index_t npos;
 

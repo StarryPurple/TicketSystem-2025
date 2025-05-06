@@ -43,7 +43,7 @@ public:
 private:
   bool is_open_locked() const { return basic_fstream_.is_open(); }
   void close_locked();
-  void reserve_locked(size_t file_size);
+  void reserve_locked(size_t data_capacity);
 
   std::fstream basic_fstream_;
   mutable std::mutex disk_io_latch_;

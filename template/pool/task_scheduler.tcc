@@ -8,7 +8,7 @@ namespace insomnia::concurrent {
 template <class F, class... Args>
 auto TaskScheduler::schedule(size_t id, F &&f, Args &&... args)
 -> std::future<std::result_of_t<F(Args...)>> {
-  if(closed) throw invalid_pool();
+  if(closed) throw invalid_pool("Task scheduler queue has closed.");
   using result_t = std::result_of_t<F(Args...)>;
   auto *task = new std::packaged_task<result_t()>(
     std::bind(std::forward<F>(f), std::forward<Args>(args)...));

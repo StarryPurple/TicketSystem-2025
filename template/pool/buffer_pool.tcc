@@ -200,7 +200,6 @@ BufferPool<T, align>::BufferPool(const std::string &file_prefix, size_t k_param,
     : frame_num_(frame_num),
       replacer_(k_param, frame_num),
       scheduler_(thread_num),
-      page_id_pool_(file_prefix + ".idx"),
       fstream_(file_prefix + ".dat") {
   frames_.reserve(frame_num);
   free_frames_.reserve(frame_num);
@@ -225,7 +224,7 @@ bool BufferPool<T, align>::deallocate(page_id_t page_id) {
     page_map_.erase(it);
   }
   // disk erasure
-  page_id_pool_.deallocate(page_id);
+  fstream_.dealloc(page_id);
   return true;
 }
 
@@ -241,7 +240,9 @@ BufferPool<T, align>::get_reader(page_id_t page_id) {
       frame_id = free_frames_.back();
       free_frames_.pop_back();
     } else {
-      replacer_cv_.wait(lock, [this] { return !replacer_.has_evictable_frame(); });
+      // HDD time delay
+      if(!replacer_cv_.wait_for(lock, std::chrono::milliseconds(100), [this] { return replacer_.has_evictable_frame(); }))
+        throw pool_overflow("Buffer pool frames full for 100ms."); // Yes I prefer exception more than optional right
       frame_id = replacer_.evict();
 
       // flush old data
@@ -261,7 +262,10 @@ BufferPool<T, align>::get_reader(page_id_t page_id) {
 
     // fetch new data
     auto future = scheduler_.schedule(page_id,
-      [this, page_id, frame_id] { fstream_.read(page_id, &frames_[frame_id].page_); });
+      [this, page_id, frame_id] {
+        // might be ignored if page_id is new
+        fstream_.read(page_id, &frames_[frame_id].page_);
+      });
     future.get();  // optimize later
   }
   // bp_latch_ unlock in Reader page constructor.
@@ -280,7 +284,9 @@ typename BufferPool<T, align>::Writer BufferPool<T, align>::get_writer(page_id_t
       frame_id = free_frames_.back();
       free_frames_.pop_back();
     } else {
-      replacer_cv_.wait(lock, [this] { return !replacer_.has_evictable_frame(); });
+      // HDD time delay
+      if(!replacer_cv_.wait_for(lock, std::chrono::milliseconds(100), [this] { return replacer_.has_evictable_frame(); }))
+        throw pool_overflow("Buffer pool frames full for 100ms."); // Yes I prefer exception more than optional right
       frame_id = replacer_.evict();
 
       // flush old data
@@ -300,7 +306,10 @@ typename BufferPool<T, align>::Writer BufferPool<T, align>::get_writer(page_id_t
 
     // fetch new data
     auto future = scheduler_.schedule(page_id,
-      [this, page_id, frame_id] { fstream_.read(page_id, &frames_[frame_id].page_); });
+      [this, page_id, frame_id] {
+        // might be ignored if page_id is new
+        fstream_.read(page_id, &frames_[frame_id].page_);
+      });
     future.get();  // optimize later
   }
   // bp_latch_ unlock in Writer page constructor.

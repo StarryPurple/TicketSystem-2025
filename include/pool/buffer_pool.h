@@ -31,7 +31,10 @@ private:
 
   struct alignas(PAGE_SIZE) AlignedPage {
     char data_[PAGE_SIZE];
+    bool operator==(const AlignedPage &other) const { return strcmp(data_, other.data_) == 0; }
+    bool operator!=(const AlignedPage &other) const { return strcmp(data_, other.data_) != 0; }
   };
+  static_assert(sizeof(AlignedPage) == PAGE_SIZE);
 
   class Frame {
     friend Writer;
@@ -149,7 +152,7 @@ public:
   BufferPool& operator=(BufferPool&&) = delete;
   ~BufferPool() { flush_all(); }
   size_t frame_capacity() const { return frame_num_; }
-  page_id_t allocate() { return page_id_pool_.allocate(); }
+  page_id_t allocate() { return fstream_.alloc(); }
   // fails if this page is still in use by writer/reader.
   bool deallocate(page_id_t page_id);
   Writer get_writer(page_id_t page_id);
@@ -157,12 +160,13 @@ public:
   // void flush(frame_id_t frame_id);
   void flush_all();
 
-  std::pair<bool, size_t> test_get_pin_count(page_id_t page_id) {
+  // if page not in buffer, returns SIZE_MAX.
+  size_t get_pin_count(page_id_t page_id) {
     std::unique_lock lock(bp_latch_);
     if (auto it = page_map_.find(page_id); it == page_map_.end())
-      return {false, 0};
+      return SIZE_MAX;
     else
-      return {true, frames_[it->second].pin_count_.load()};
+      return frames_[it->second].pin_count_.load();
   }
 
 private:
@@ -173,7 +177,7 @@ private:
   const size_t frame_num_;
   policy::LruKReplacer replacer_;
   TaskScheduler scheduler_;
-  disk::IndexPool page_id_pool_;
+  // disk::IndexPool page_id_pool_; Duplicated with the pool in fstream_.
   static_assert(std::is_same_v<page_id_t, disk::IndexPool::index_t>);
   disk::fstream<AlignedPage> fstream_;
 
