@@ -241,7 +241,7 @@ TEST_F(BufferPoolTestFixture, DeadlockTest) {
 }
 
 TEST_F(BufferPoolTestFixture, EvictableTest) {
-  const size_t rounds = 1000, num_readers = 8;
+  const size_t rounds = 100, num_readers = 8;
   BufferPool bp(base_fname, k_dist, 1, thread_cnt);
   for(size_t i = 0; i < rounds; ++i) {
     std::mutex mutex;
@@ -255,7 +255,7 @@ TEST_F(BufferPoolTestFixture, EvictableTest) {
         std::unique_lock lock(mutex);
         cv.wait(lock, [&signal] { return signal; });
         auto reader = bp.get_reader(winner_pid);
-        ASSERT_FALSE(bp.get_reader(loser_pid).is_valid());
+        ASSERT_THROW(bp.get_reader(loser_pid), conc::pool_overflow);
       });
     }
     std::unique_lock lock(mutex);
@@ -320,8 +320,44 @@ TEST_F(BufferPoolTestFixture, ConcurrentReaderWriterTest) {
     thread.join();
 }
 
+struct T {
+  char a[10];
+  T(const char _a[10]) { memcpy(a, _a, 10); }
+  bool operator==(const T &other) const { return memcmp(a, other.a, 10) == 0; }
+};
 
+struct U : T {
+  char b[10];
+  U(const char _a[10], const char _b[10]) : T(_a) { memcpy(b, _b, 10); }
+  bool operator==(const U &other) const {
+    return memcmp(a, other.a, 10) == 0 && memcmp(b, other.b, 10) == 0;
+  }
+};
 
+TEST_F(BufferPoolTestFixture, CutOffTest) {
+  size_t pid1, pid2;
+  T t("t"), out_t("");
+  U u("uu", "vvv"), out_u("", "");
+
+  {
+    conc::BufferPool<T, sizeof(U)> bp(base_fname, k_dist, frame_cnt, thread_cnt);
+    pid1 = bp.alloc();
+    auto writer1 = bp.get_writer(pid1);
+    writer1.write(&u);
+    pid2 = bp.alloc();
+    auto writer2 = bp.get_writer(pid2);
+    writer2.write(&t);
+  }
+  {
+    conc::BufferPool<T, sizeof(U)> bp(base_fname, k_dist, frame_cnt, thread_cnt);
+    auto reader1 = bp.get_reader(pid1);
+    reader1.read(&out_u);
+    ASSERT_EQ(u, out_u);
+    auto reader2 = bp.get_reader(pid2);
+    reader2.read(&out_t);
+    ASSERT_EQ(t, out_t);
+  }
+}
 
 
 

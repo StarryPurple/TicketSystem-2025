@@ -33,7 +33,7 @@ public:
 
 private:
   std::fstream pool_;
-  index_t capacity_{0};
+  index_t capacity_{0}; // 0 reserved for nullptr
   cntr::vector<index_t> unallocated_; // alignas(64) useful?
   alignas(64) mutable std::mutex latch_;
 };

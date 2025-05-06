@@ -6,6 +6,8 @@
 #include <map>
 #include <chrono>
 #include "fstream.h"
+#include "bpt_nodes.h"
+#include "bplustree.h"
 
 
 int main() {

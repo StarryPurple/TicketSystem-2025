@@ -23,6 +23,19 @@ namespace container {
     explicit index_out_of_bound(const char *detail = "") : container_exception(detail) {}
   };
 }
+
+namespace disk {
+  class disk_exception : std::runtime_error {
+  public:
+    explicit disk_exception(const char *detail = "") : runtime_error(detail) {}
+  };
+
+  class segmentation_fault : disk_exception {
+  public:
+    explicit segmentation_fault(const char *detail = "") : disk_exception(detail) {}
+  };
+}
+
 namespace concurrent {
   class concurrent_exception : std::runtime_error {
   public:

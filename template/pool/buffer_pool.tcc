@@ -241,12 +241,12 @@ BufferPool<T, align>::get_reader(page_id_t page_id) {
       free_frames_.pop_back();
     } else {
       // HDD time delay
-      /*
+
       if(!replacer_cv_.wait_for(lock, std::chrono::milliseconds(20), [this] { return replacer_.has_evictable_frame(); }))
-        return Reader(); // empty vessel.
-        // throw pool_overflow("Buffer pool frames full for 20ms."); // Yes I prefer exception more than optional right
-      */
-      replacer_cv_.wait(lock, [this] { return replacer_.has_evictable_frame(); });
+        // return Reader(); // empty vessel.
+        throw pool_overflow("Buffer pool frames full for 20ms."); // Yes I prefer exception more than optional right
+
+      // replacer_cv_.wait(lock, [this] { return replacer_.has_evictable_frame(); });
       frame_id = replacer_.evict();
 
       // flush old data
@@ -289,12 +289,12 @@ typename BufferPool<T, align>::Writer BufferPool<T, align>::get_writer(page_id_t
       free_frames_.pop_back();
     } else {
       // HDD time delay
-      /*
+
       if(!replacer_cv_.wait_for(lock, std::chrono::milliseconds(20), [this] { return replacer_.has_evictable_frame(); }))
-        return Writer(); // empty vessel
-        // throw pool_overflow("Buffer pool frames full for 20ms."); // Yes I prefer exception more than optional right
-      */
-      replacer_cv_.wait(lock, [this] { return replacer_.has_evictable_frame(); });
+        // return Writer(); // empty vessel
+        throw pool_overflow("Buffer pool frames full for 20ms."); // Yes I prefer exception more than optional right
+
+      // replacer_cv_.wait(lock, [this] { return replacer_.has_evictable_frame(); });
       frame_id = replacer_.evict();
 
       // flush old data

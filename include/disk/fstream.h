@@ -8,14 +8,19 @@
 #include "index_pool.h"
 
 namespace insomnia::disk {
+/**
+ * @brief specialized for metadata placeholder for disk::fstream
+ */
+class monometa {};
 
 /** @brief specialized for one-type disk recording.
  *  @warning This fstream enormously varies from std::fstream. Be careful.
  *    aware, bare, care.
  */
-template <class T>
+template <class T, class Meta = monometa>
 class fstream {
   static constexpr size_t SIZE_T = sizeof(T);
+  static constexpr size_t SIZE_META = (std::is_same_v<Meta, monometa> ? 0 : sizeof(Meta));
 public:
   using index_t = IndexPool::index_t;
 
@@ -38,6 +43,8 @@ public:
   void dealloc(index_t index) { index_pool_.deallocate(index); }
   void write(index_t index, const T *data);
   void read(index_t index, T *data);
+  void write_meta(const Meta *meta) requires (!std::is_same_v<Meta, monometa>);
+  void read_meta(Meta *meta) requires (!std::is_same_v<Meta, monometa>);
   void reserve(size_t file_size);
 
 private:

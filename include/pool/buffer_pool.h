@@ -88,11 +88,15 @@ public:
       frame_->is_dirty_ = true;
       return frame_->data();
     }
-    template <class Derived>
-    Derived* as() {
-      static_assert(std::is_base_of_v<T, Derived>);
+    template <class Derived = T>
+    Derived* as() requires (std::is_base_of_v<T, Derived>) {
       frame_->is_dirty_ = true;
       return reinterpret_cast<Derived*>(frame_->data());
+    }
+    template <class Derived = T>
+    void write(const Derived *data) requires (std::is_base_of_v<T, Derived>) {
+      frame_->is_dirty_ = true; // don't forget it.
+      memcpy(frame_->data(), data, sizeof(Derived));
     }
     bool is_dirty() const { return frame_->is_dirty_; }
     bool is_valid() const { return is_valid_; }
@@ -124,10 +128,13 @@ public:
 
     page_id_t page_id() const { return page_id_; }
     const char* data() const { return frame_->data(); }
-    template <class Derived>
-    const Derived* as() const {
-      static_assert(std::is_base_of_v<T, Derived>);
+    template <class Derived = T>
+    const Derived* as() const requires (std::is_base_of_v<T, Derived>) {
       return reinterpret_cast<Derived*>(frame_->data());
+    }
+    template <class Derived = T>
+    void read(Derived *data) const requires (std::is_base_of_v<T, Derived>) {
+      memcpy(data, frame_->data(), sizeof(Derived));
     }
 
     bool is_dirty() const { return frame_->is_dirty_; }

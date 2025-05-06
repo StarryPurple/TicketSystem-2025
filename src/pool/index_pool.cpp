@@ -50,7 +50,7 @@ IndexPool::index_t IndexPool::allocate() {
     unallocated_.pop_back();
     return res;
   }
-  return capacity_++;
+  return ++capacity_;
 }
 
 void IndexPool::deallocate(index_t index) {
