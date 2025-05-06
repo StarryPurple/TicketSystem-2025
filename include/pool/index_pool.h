@@ -3,11 +3,15 @@
 
 #include <fstream>
 #include <filesystem>
+#include <mutex>
 
 #include "vector.h"
 
 namespace insomnia::disk {
 
+/**
+ * @brief index allocator. Thread-safe. Only supports size_t as index type.
+ */
 class IndexPool {
 public:
   using index_t = size_t;
@@ -16,15 +20,22 @@ public:
   ~IndexPool() { close(); }
   void open(const std::filesystem::path &file);
   void close();
-  bool is_open() const { return pool_.is_open(); }
+  bool is_open() const {
+    std::unique_lock lock(latch_);
+    return pool_.is_open();
+  }
   index_t allocate();
   void deallocate(index_t index);
-  index_t size() const { return capacity_; }
+  index_t size() const {
+    std::unique_lock lock(latch_);
+    return capacity_;
+  }
 
 private:
   std::fstream pool_;
   index_t capacity_{0};
-  cntr::vector<index_t> unallocated_;
+  cntr::vector<index_t> unallocated_; // alignas(64) useful?
+  alignas(64) mutable std::mutex latch_;
 };
 
 }

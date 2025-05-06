@@ -21,7 +21,7 @@ public:
 
   /**
    * @brief evict a frame/... and erase its attendence in the replacer.
-   * @attention better call empty() before eviction to ensure the validity of eviction.
+   * @attention better call has_evictable_frame() before eviction to ensure the validity of eviction.
    * @return the index of the evicted one. If eviction failed (all pages are pinned), return npos.
    */
   index_t evict();
@@ -34,8 +34,8 @@ public:
   void access(index_t index); // initially non-evictable
   void unpin(index_t index);
   void pin(index_t index);
-  size_t free_cnt() const { return size_; }
-  bool empty() const { return size_ == 0; }
+  size_t evictable_cnt() const { return size_; }
+  bool has_evictable_frame() const { return size_ == 0; }
 
   index_t npos;
 

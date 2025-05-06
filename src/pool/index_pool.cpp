@@ -3,6 +3,7 @@
 namespace insomnia::disk {
 
 void IndexPool::open(const std::filesystem::path &file) {
+  std::unique_lock lock(latch_);
   // treated always succeeded
   if(pool_.is_open()) close();
   pool_.open(file, std::ios::in | std::ios::out | std::ios::binary);
@@ -28,6 +29,7 @@ void IndexPool::open(const std::filesystem::path &file) {
 }
 
 void IndexPool::close() {
+  std::unique_lock lock(latch_);
   if(!pool_.is_open()) return;
   pool_.seekp(0);
   pool_.write(reinterpret_cast<char*>(&capacity_), sizeof(capacity_));
@@ -42,6 +44,7 @@ void IndexPool::close() {
 
 
 IndexPool::index_t IndexPool::allocate() {
+  std::unique_lock lock(latch_);
   if(!unallocated_.empty()) {
     index_t res = unallocated_.back();
     unallocated_.pop_back();
@@ -51,6 +54,7 @@ IndexPool::index_t IndexPool::allocate() {
 }
 
 void IndexPool::deallocate(index_t index) {
+  std::unique_lock lock(latch_);
   unallocated_.push_back(index);
 }
 

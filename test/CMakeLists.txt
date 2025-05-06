@@ -3,6 +3,7 @@ add_subdirectory(
     ${CMAKE_CURRENT_BINARY_DIR}/googletest-build
 )
 
+
 file(GLOB_RECURSE GTestSources CONFIGURE_DEPENDS "*_gtest.cpp")
 foreach(gtest_source ${GTestSources})
   get_filename_component(gtest_name ${gtest_source} NAME_WE)

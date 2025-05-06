@@ -81,7 +81,7 @@ public:
       return &**this;
     }
     bool operator==(const iterator &other) const {
-      return _container == other._container && _node = other._node;
+      return _container == other._container && _node == other._node;
     }
     bool operator!=(const iterator &other) const {
       return _container != other._container || _node != other._node;
@@ -110,6 +110,7 @@ public:
   size_t size() const { return _size; }
   bool empty() const { return _size == 0; }
   void clear();
+  void reserve(size_t bucket_size) { rehash(bucket_size); }
 
 private:
   void rehash(size_t bucket_size);

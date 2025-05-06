@@ -236,15 +236,6 @@ void unordered_map<KeyT, ValueT, Hash, KeyEqual>::rehash(size_t bucket_size) {
   _bucket_size = bucket_size;
 }
 
-
-
-
-
-
-
-
-
-
 }
 
 #endif
