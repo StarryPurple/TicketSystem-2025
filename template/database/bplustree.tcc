@@ -88,6 +88,16 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(
 
   leaf_writer.drop();
   root_lock.lock();
+  if(root_ == nullpos) {
+    // what if root_ here is nullpos?
+    root_ = buffer_pool_.alloc();
+    root_writer = buffer_pool_.get_writer(root_);
+    Leaf leaf_root;
+    leaf_root.set_root();
+    leaf_root.insert(0, KVType(key, value));
+    root_writer.write(leaf_root);
+    return true;
+  }
   root_writer = buffer_pool_.get_writer(root_);
   root_lock.unlock();
   vector<Writer> writers = FindLeafPessi(std::move(root_writer), kv, true);
@@ -101,6 +111,8 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(
   leaf->insert(pos, kv);
   if(leaf->is_valid())
     return true;
+
+  // leaf->size() > leaf->max_size()
 
   if(writers.empty()) {
     // the root node is full & the root node is the only node.
@@ -213,6 +225,8 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &
 
   leaf_writer.drop();
   root_lock.lock();
+  if(root_ == nullpos)
+    return false;
   root_writer = buffer_pool_.get_writer(root_);
   root_lock.unlock();
   vector<Writer> writers = FindLeafPessi(std::move(root_writer), kv, false);
@@ -227,13 +241,125 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &
   if(leaf->is_valid())
     return true;
 
+  // leaf->size() < leaf->min_size().
+
   if(writers.empty()) {
-    // the
+    // the root node is the only node and node size <= 1.
+    // delete it.
+    if(leaf->size() == 1) return true;
+    root_lock.lock();
+    assert(leaf_writer.id() == root_);
+    leaf_writer.drop();
+    buffer_pool_.dealloc(root_); // while(!try()) {;}
+    root_ = nullpos;
+    return true;
   }
+  {
+    // leaf - internal
+    Internal *parent = writers.back().template as<Internal>();
+    pos = parent->upper_bound(leaf->highkey());
+    assert(parent->value(pos) == leaf_writer.id());
+    if(pos > 0) {
+      // coalesce/redistribute with the one at its left.
+      Writer left_writer = buffer_pool_.get_writer(parent->value(pos - 1));
+      Leaf *left_leaf = left_writer.template as<Leaf>();
+      if(left_leaf->size() + leaf->size() <= Leaf::MERGE_BOUND) {
+        left_leaf->absorb_right(*leaf);
+        index_t rht_index = leaf_writer.id();
+        leaf_writer.drop();
+        buffer_pool_.dealloc(rht_index);
+        parent->remove(pos);
+        memcpy(&parent->key(pos - 1), &left_leaf->highkey(), sizeof(KVType));
+      } else {
+        leaf->fetch_from_left(*left_leaf);
+        memcpy(&parent->key(pos - 1), &left_leaf->highkey(), sizeof(KVType));
+        return true; // parent size not modified
+      }
+    } else {
+      // coalesce/redistribute with the one at its right.
+      Writer right_writer = buffer_pool_.get_writer(parent->value(pos + 1));
+      Leaf *right_leaf = right_writer.template as<Leaf>();
+      if(leaf->size() + right_leaf->size() <= Leaf::MERGE_BOUND) {
+        leaf->absorb_right(*right_leaf);
+        index_t rht_index = right_writer.id();
+        right_writer.drop();
+        buffer_pool_.dealloc(rht_index);
+        parent->remove(pos + 1);
+        memcpy(&parent->key(pos), &leaf->highkey(), sizeof(KVType));
+      } else {
+        leaf->fetch_from_right(*right_leaf);
+        memcpy(&parent->key(pos), &leaf->highkey(), sizeof(KVType));
+        return true;
+      }
+    }
+  }
+  // internal - root
+  while(writers.size() > 1) {
+    Writer internal_writer = std::move(writers.back());
+    writers.pop_back();
+    Internal *internal = internal_writer.template as<Internal>();
+    if(internal->is_valid())
+      return true;
 
+    Internal *parent = writers.back().template as<Internal>();
+    pos = parent->upper_bound(internal->highkey());
+    assert(parent->value(pos) == internal_writer.id());
+    if(pos > 0) {
+      // coalesce/redistribute with the one at its left.
+      Writer left_writer = buffer_pool_.get_writer(parent->value(pos - 1));
+      Internal *left_internal = left_writer.template as<Internal>();
+      if(left_internal->size() + internal->size() <= Internal::MERGE_BOUND) {
+        left_internal->absorb_right(*internal);
+        index_t rht_index = internal_writer.id();
+        internal_writer.drop();
+        buffer_pool_.dealloc(rht_index);
+        parent->remove(pos);
+        memcpy(&parent->key(pos - 1), &left_internal->highkey(), sizeof(KVType));
+      } else {
+        internal->fetch_from_left(*left_internal);
+        memcpy(&parent->key(pos - 1), &left_internal->highkey(), sizeof(KVType));
+        return true; // parent size not modified
+      }
+    } else {
+      // coalesce/redistribute with the one at its right.
+      Writer right_writer = buffer_pool_.get_writer(parent->value(pos + 1));
+      Internal *right_internal = right_writer.template as<Internal>();
+      if(internal->size() + right_internal->size() <= Internal::MERGE_BOUND) {
+        internal->absorb_right(*right_internal);
+        index_t rht_index = right_writer.id();
+        right_writer.drop();
+        buffer_pool_.dealloc(rht_index);
+        parent->remove(pos + 1);
+        memcpy(&parent->key(pos), &internal->highkey(), sizeof(KVType));
+      } else {
+        internal->fetch_from_right(*right_internal);
+        memcpy(&parent->key(pos), &internal->highkey(), sizeof(KVType));
+        return true;
+      }
+    }
+  }
+  {
+    Writer &writer = writers.back();
+    if(!writer.template as<Base>()->is_root())
+      return true;
+
+    Internal *root_internal = writer.template as<Internal>();
+    if(root_internal->is_valid())
+      return true;
+
+    // The internal root has only one child.
+    // internal - delete root
+    // The type of the new root is not sure. But... who cares?
+
+    assert(root_internal->size() == 1);
+    index_t root = root_internal->value(0);
+    root_lock.lock();
+    writer.drop();
+    buffer_pool_.dealloc(root_);
+    root_ = root;
+    return true;
+  }
 }
-
-
 
 template <Trivial KeyT, Trivial ValueT, class KeyCompare, class ValueCompare>
 typename MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::Reader

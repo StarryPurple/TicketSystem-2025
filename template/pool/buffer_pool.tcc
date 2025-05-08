@@ -215,8 +215,10 @@ template <Trivial T, Trivial Meta, size_t align>
 bool BufferPool<T, Meta, align>::dealloc(page_id_t page_id) {
   std::unique_lock lock(bp_latch_);
   if (auto it = page_map_.find(page_id); it != page_map_.end()) {
-    if (frames_[it->second].pin_count_.load() > 0)
-      return false;
+    if (frames_[it->second].pin_count_.load() > 0) {
+      throw disk_exception("Erasing pages under use");
+      // return false;
+    }
     // memory erasure / eviction
     // no need to write the data back.
     frames_[it->second].drop();

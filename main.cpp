@@ -1,93 +1,43 @@
 #include <iostream>
-#include <unordered_map>
-#include "unordered_map.h"
+
 #include "array.h"
-#include <array>
-#include <map>
-#include <chrono>
-#include "fstream.h"
-#include "bpt_nodes.h"
 #include "bplustree.h"
 
-
 int main() {
-  constexpr int a = 20000, A = 50000;
-  auto start = std::chrono::high_resolution_clock().now();
-  insomnia::unordered_map<int, int> iumap;
-  for(int i = 1; i < a; ++i)
-    iumap.emplace(i, i);
-  for(int i = 0; i < A; ++i) {
-    auto it = iumap.find(i);
-    if(it != iumap.end()) {
-      if(i != it->second) std::cout << "H";
-      i = it->second;
-    }
-  }
-  auto end = std::chrono::high_resolution_clock::now();
-  std::cout << "ism umap: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
-  start = std::chrono::high_resolution_clock().now();
-  std::unordered_map<int, int> umap;
-  for(int i = 1; i <= a; ++i)
-    umap.emplace(i, i);
-  for(int i = 0; i < A; ++i) {
-    auto it = umap.find(i);
-    if(it != umap.end())
-      i = it->second;
-  }
-  end = std::chrono::high_resolution_clock::now();
-  std::cout << "std umap: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
-  start = std::chrono::high_resolution_clock::now();
-  std::map<int, int> map;
-  for(int i = 1; i <= a; ++i)
-    map.emplace(i, i);
-  for(int i = 0; i < A; ++i) {
-    auto it = map.find(i);
-    if(it != map.end())
-      i = it->second;
-  }
-  end = std::chrono::high_resolution_clock::now();
-  std::cout << "std map: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
-  start = std::chrono::high_resolution_clock::now();
-  std::pair<int, int> arr[A];
-  for(int i = 1; i <= a; ++i)
-    arr[i] = {i, i};
-  for(int i = 0; i < A; ++i) {
-    for(int j = 0; j < A; ++j) {
-      if(arr[j].first == i) {
-        i = arr[j].second;
-        break;
+  using index_t = insomnia::array<char, 64>;
+  using value_t = int;
+  using MulBpt_t = insomnia::MultiBPlusTree<index_t, value_t>;
+
+  auto dir = std::filesystem::current_path() / "data";
+  std::filesystem::create_directory(dir);
+  auto name_base = dir / "test";
+  int k_param = 3;
+  int buffer_cap = 1024;
+  int thread_num = 4;
+  MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
+
+  int optcnt, value;
+  std::string opt, index;
+  std::cin >> optcnt;
+  for(int i = 1; i <= optcnt; ++i) {
+    std::cin >> opt;
+    if(opt[0] == 'i') {
+      std::cin >> index >> value;
+      mul_bpt.insert(index, value);
+    } else if(opt[0] == 'f') {
+      std::cin >> index;
+      insomnia::vector<value_t> list = mul_bpt.search(index);
+      if(list.empty())
+        std::cout << "null" << std::endl;
+      else {
+        for(value_t &val : list)
+          std::cout << val << ' ';
+        std::cout << std::endl;
       }
+    } else if(opt[0] == 'd') {
+      std::cin >> index >> value;
+      mul_bpt.remove(index, value);
     }
   }
-  end = std::chrono::high_resolution_clock::now();
-  std::cout << "raw arr: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
-  start = std::chrono::high_resolution_clock::now();
-  std::array<std::pair<int, int>, A> sarr;
-  for(int i = 1; i <= a; ++i)
-    sarr[i] = {i, i};
-  for(int i = 0; i < A; ++i) {
-    for(int j = 0; j < A; ++j) {
-      if(sarr[j].first == i) {
-        i = sarr[j].second;
-        break;
-      }
-    }
-  }
-  end = std::chrono::high_resolution_clock::now();
-  std::cout << "std arr: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
-  start = std::chrono::high_resolution_clock::now();
-  insomnia::array<std::pair<int, int>, A> iarr;
-  for(int i = 1; i <= a; ++i)
-    iarr[i] = {i, i};
-  for(int i = 0; i < A; ++i) {
-    for(int j = 0; j < A; ++j) {
-      if(iarr[j].first == i) {
-        i = iarr[j].second;
-        break;
-      }
-    }
-  }
-  end = std::chrono::high_resolution_clock::now();
-  std::cout << "ism arr: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
   return 0;
 }

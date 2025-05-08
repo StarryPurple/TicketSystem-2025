@@ -43,6 +43,9 @@ TEST_F(MultiBptFixture, ExampleTest) {
   ASSERT_EQ(list1[1], 2012);
   auto list2 = bpt.search("Java");
   ASSERT_EQ(list2.size(), 0);
+  bpt.remove("Dune", 2021);
+  auto list3 = bpt.search("Dune");
+  ASSERT_EQ(list3.size(), 0);
 }
 
 TEST_F(MultiBptFixture, MassInsertTest) {

@@ -17,8 +17,8 @@ public:
   index_t nullpos = IndexPool::nullpos;
   enum class NodeType { Invalid, Internal, Leaf };
 
-  BptNodeBase(NodeType ntype, int max_size, int min_size)
-    : ntype_(ntype), max_size_(max_size), min_size_(min_size) {}
+  BptNodeBase(NodeType ntype, int max_size, int min_size, int merge_bound)
+    : ntype_(ntype), max_size_(max_size), min_size_(min_size), merge_bound_(merge_bound) {}
 
   NodeType type() const { return ntype_; }
 
@@ -26,11 +26,13 @@ public:
 
   int size() const { return size_; }
 
-  void set_root() { min_size_ = 1; is_root_ = true; }
+  void set_root() { min_size_ = 2; is_root_ = true; }
 
   int max_size() const { return max_size_; }
 
   int min_size() const { return min_size_; }
+
+  int merge_bound() const { return merge_bound_; }
 
   bool is_insert_safe() const { return size_ < max_size_; }
 
@@ -42,7 +44,7 @@ public:
 
 protected:
   const NodeType ntype_;
-  const int max_size_;
+  const int max_size_, merge_bound_;
   int min_size_;
   int size_{0};
   bool is_root_{false};
@@ -55,10 +57,14 @@ public:
   static constexpr size_t SIZE_INFO = sizeof(KeyCompare) + sizeof(KeyT) + sizeof(index_t);
   static constexpr int CAPACITY = std::max(8ul,
     ((SIZE_KV + SIZE_INFO + 4095) / 4096 * 4096 - SIZE_INFO) / SIZE_KV);
-  static constexpr int SPLIT_THRESHOLD = CAPACITY - 1, MERGE_THRESHOLD = CAPACITY * 0.40;
-  BptInternalNode(): BptNodeBase(NodeType::Internal, SPLIT_THRESHOLD, MERGE_THRESHOLD) {}
+  static constexpr int MAX_SIZE = CAPACITY - 1, MIN_SIZE = CAPACITY * 0.40, MERGE_BOUND = CAPACITY * 0.90;
+  BptInternalNode(): BptNodeBase(NodeType::Internal, MAX_SIZE, MIN_SIZE, MERGE_BOUND) {}
 
-  void set_not_root() { min_size_ = MERGE_THRESHOLD; is_root_ = false; }
+  void set_not_root() { min_size_ = MIN_SIZE; is_root_ = false; }
+
+  KeyT& key(int index) { return pairs_[index].key; }
+  ValueT& value(int index) { return pairs_[index].value; }
+  KeyT& highkey() { return pairs_[size_ - 1].key; }
 
   const KeyT& key(int index) const { return pairs_[index].key; }
   const ValueT& value(int index) const { return pairs_[index].value; }
@@ -117,9 +123,20 @@ public:
     int rht_size = size_sum - lft_size;
     int diff = lft_size - size_;
     memmove(pairs_ + size_, rhs.pairs_, diff * sizeof(KVPair));
-    memmove(rhs.pairs_, rhs.key + diff, diff * sizeof(KVPair));
+    memmove(rhs.pairs_, rhs.pairs_ + diff, diff * sizeof(KVPair));
     size_ = lft_size;
     rhs.size_ = rht_size;
+  }
+
+  void fetch_from_left(BptInternalNode &lhs) {
+    int size_sum = lhs.size_ + size_;
+    int lft_size = size_sum / 2;
+    int rht_size = size_sum - lft_size;
+    int diff = rht_size - size_;
+    memmove(pairs_ + diff, pairs_, diff * sizeof(KVPair));
+    memmove(pairs_, lhs.pairs_ + lft_size, diff * sizeof(KVPair));
+    size_ = rht_size;
+    lhs.size_ = lft_size;
   }
 
 private:
@@ -140,10 +157,13 @@ public:
   static constexpr size_t SIZE_INFO = sizeof(KeyCompare) + sizeof(KeyT) + sizeof(index_t);
   static constexpr int CAPACITY = std::max(8ul,
     ((sizeof(KeyT) + SIZE_INFO + 4095) / 4096 * 4096 - SIZE_INFO) / sizeof(KeyT));
-  static constexpr int SPLIT_THRESHOLD = CAPACITY - 1, MERGE_THRESHOLD = CAPACITY * 0.40;
-  BptLeafSingleNode() : BptNodeBase(NodeType::Leaf, SPLIT_THRESHOLD, MERGE_THRESHOLD) {}
+  static constexpr int MAX_SIZE = CAPACITY - 1, MIN_SIZE = CAPACITY * 0.40, MERGE_BOUND = CAPACITY * 0.90;
+  BptLeafSingleNode() : BptNodeBase(NodeType::Leaf, MAX_SIZE, MIN_SIZE, MERGE_BOUND) {}
 
-  void set_not_root() { min_size_ = MERGE_THRESHOLD; is_root_ = false; }
+  void set_not_root() { min_size_ = MIN_SIZE; is_root_ = false; }
+
+  KeyT& key(int index) { return key_[index]; }
+  KeyT& highkey() { return key_[size_ - 1]; }
 
   const KeyT& key(int index) const { return key_[index]; }
   const KeyT& highkey() const { return key_[size_ - 1]; }
@@ -200,9 +220,20 @@ public:
     int rht_size = size_sum - lft_size;
     int diff = lft_size - size_;
     memmove(key_ + size_, rhs.key_, diff * sizeof(KeyT));
-    memmove(rhs.key_, rhs.key + diff, diff * sizeof(KeyT));
+    memmove(rhs.key_, rhs.key_ + diff, diff * sizeof(KeyT));
     size_ = lft_size;
     rhs.size_ = rht_size;
+  }
+
+  void fetch_from_left(BptLeafSingleNode &lhs) {
+    int size_sum = lhs.size_ + size_;
+    int lft_size = size_sum / 2;
+    int rht_size = size_sum - lft_size;
+    int diff = rht_size - size_;
+    memmove(key_ + diff, key_, diff * sizeof(KeyT));
+    memmove(key_, lhs.key_ + lft_size, diff * sizeof(KeyT));
+    size_ = rht_size;
+    lhs.size_ = lft_size;
   }
 
   // index_t lft_index() const { return lft_; }
@@ -225,10 +256,14 @@ public:
   static constexpr size_t SIZE_INFO = sizeof(KeyCompare) + sizeof(KeyT) + sizeof(index_t);
   static constexpr int CAPACITY = std::max(8ul,
     ((SIZE_KV + SIZE_INFO + 4095) / 4096 * 4096 - SIZE_INFO) / SIZE_KV);
-  static constexpr int SPLIT_THRESHOLD = CAPACITY - 1, MERGE_THRESHOLD = CAPACITY * 0.40;
-  BptLeafPairNode(): BptNodeBase(NodeType::Leaf, SPLIT_THRESHOLD, MERGE_THRESHOLD) {}
+  static constexpr int MAX_SIZE = CAPACITY - 1, MIN_SIZE = CAPACITY * 0.40, MERGE_BOUND = CAPACITY * 0.90;
+  BptLeafPairNode(): BptNodeBase(NodeType::Leaf, MAX_SIZE, MIN_SIZE, MERGE_BOUND) {}
 
-  void set_not_root() { min_size_ = MERGE_THRESHOLD; is_root_ = false; }
+  void set_not_root() { min_size_ = MIN_SIZE; is_root_ = false; }
+
+  KeyT& key(int index) { return pairs_[index].key; }
+  ValueT& value(int index) { return pairs_[index].value; }
+  KeyT& highkey() { return pairs_[size_ - 1].key; }
 
   const KeyT& key(int index) const { return pairs_[index].key; }
   const ValueT& value(int index) const { return pairs_[index].value; }
