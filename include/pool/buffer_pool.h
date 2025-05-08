@@ -11,6 +11,17 @@
 
 
 namespace insomnia::concurrent {
+
+template <class T>
+concept Trivial = std::is_trivially_copyable_v<T>;
+
+template <class T, class Derived, size_t align>
+concept ReadableDerived =
+      std::is_trivially_copyable_v<Derived> &&
+      std::is_base_of_v<T, Derived> &&
+      (sizeof(Derived) <= align);
+
+
 /**
  * @brief disk read/write buffer pool.
  * @tparam T The storage type of the disk.
@@ -18,7 +29,7 @@ namespace insomnia::concurrent {
  * @warning remember to check the @align param everytime you derive a type from T.
  * @warning Make sure all Writers/Readers are deconstructed before buffer pool deconstructs.
  */
-template <class T, size_t align = sizeof(T)>
+template <Trivial T, Trivial Meta = disk::monometa, size_t align = sizeof(T)>
 class BufferPool {
 public:
   static constexpr size_t PAGE_SIZE = (align + 4095) / 4096 * 4096;
@@ -75,7 +86,7 @@ public:
     Writer() = default;
     explicit Writer(
       page_id_t page_id, Frame *frame, policy::LruKReplacer *replacer,
-      std::mutex *bp_latch, TaskScheduler *scheduler, disk::fstream<AlignedPage> *fstream,
+      std::mutex *bp_latch, TaskScheduler *scheduler, disk::fstream<AlignedPage, Meta> *fstream,
       std::condition_variable *replacer_cv, std::unique_lock<std::mutex> lock);
     Writer(const Writer&) = delete;
     Writer& operator=(const Writer&) = delete;
@@ -83,20 +94,31 @@ public:
     Writer& operator=(Writer &&other) noexcept;
     ~Writer() { drop(); }
 
-    page_id_t page_id() const { return page_id_; }
+    page_id_t id() const { return page_id_; }
     char* data() {
       frame_->is_dirty_ = true;
       return frame_->data();
     }
     template <class Derived = T>
-    Derived* as() requires (std::is_base_of_v<T, Derived>) {
-      frame_->is_dirty_ = true;
-      return reinterpret_cast<Derived*>(frame_->data());
+    Derived* as() requires ReadableDerived<T, Derived, align> {
+      // is_dirty_ = true; set in data().
+      return reinterpret_cast<Derived*>(data());
     }
     template <class Derived = T>
-    void write(const Derived *data) requires (std::is_base_of_v<T, Derived>) {
-      frame_->is_dirty_ = true; // don't forget it.
-      memcpy(frame_->data(), data, sizeof(Derived));
+    void write(const Derived *data) requires ReadableDerived<T, Derived, align> {
+      write_impl(data, sizeof(Derived));
+    }
+    template <class Derived = T>
+    void write(const Derived &data) requires ReadableDerived<T, Derived, align> {
+      write_impl(&data, sizeof(Derived));
+    }
+    template <class Derived = T>
+    void read(Derived *data) const requires ReadableDerived<T, Derived, align> {
+      read_impl(data, sizeof(Derived));
+    }
+    template <class Derived = T>
+    void read(Derived &data) const requires ReadableDerived<T, Derived, align> {
+      read_impl(&data, sizeof(Derived));
     }
     bool is_dirty() const { return frame_->is_dirty_; }
     bool is_valid() const { return is_valid_; }
@@ -109,16 +131,24 @@ public:
     policy::LruKReplacer *replacer_;
     std::mutex *bp_latch_;
     TaskScheduler *scheduler_;
-    disk::fstream<AlignedPage> *fstream_;
+    disk::fstream<AlignedPage, Meta> *fstream_;
     std::condition_variable *replacer_cv_;
     bool is_valid_{false};
+
+    void write_impl(const void *ptr, size_t size) {
+      // is_dirty_ = true; set in data().
+      memcpy(data(), ptr, size);
+    }
+    void read_impl(void *ptr, size_t size) const {
+      memcpy(ptr, data(), size);
+    }
   };
   class Reader {
   public:
     Reader() = default;
     explicit Reader(
       page_id_t page_id, Frame *frame, policy::LruKReplacer *replacer,
-      std::mutex *bp_latch, TaskScheduler *scheduler, disk::fstream<AlignedPage> *fstream,
+      std::mutex *bp_latch, TaskScheduler *scheduler, disk::fstream<AlignedPage, Meta> *fstream,
       std::condition_variable *replacer_cv, std::unique_lock<std::mutex> lock);
     Reader(const Reader&) = delete;
     Reader& operator=(const Reader&) = delete;
@@ -126,17 +156,20 @@ public:
     Reader& operator=(Reader &&other) noexcept;
     ~Reader() { drop(); }
 
-    page_id_t page_id() const { return page_id_; }
+    page_id_t id() const { return page_id_; }
     const char* data() const { return frame_->data(); }
     template <class Derived = T>
-    const Derived* as() const requires (std::is_base_of_v<T, Derived>) {
-      return reinterpret_cast<Derived*>(frame_->data());
+    const Derived* as() const requires ReadableDerived<T, Derived, align> {
+      return reinterpret_cast<const Derived*>(frame_->data());
     }
     template <class Derived = T>
-    void read(Derived *data) const requires (std::is_base_of_v<T, Derived>) {
-      memcpy(data, frame_->data(), sizeof(Derived));
+    void read(Derived *data) const requires ReadableDerived<T, Derived, align> {
+      read_impl(data, sizeof(Derived));
     }
-
+    template <class Derived = T>
+    void read(Derived &data) const requires ReadableDerived<T, Derived, align> {
+      read_impl(&data, sizeof(Derived));
+    }
     bool is_dirty() const { return frame_->is_dirty_; }
     bool is_valid() const { return is_valid_; }
     void flush();
@@ -148,9 +181,13 @@ public:
     policy::LruKReplacer *replacer_;
     std::mutex *bp_latch_;
     TaskScheduler *scheduler_;
-    disk::fstream<AlignedPage> *fstream_;
+    disk::fstream<AlignedPage, Meta> *fstream_;
     std::condition_variable *replacer_cv_;
     bool is_valid_{false};
+
+    void read_impl(void *ptr, size_t size) const {
+      memcpy(ptr, data(), size);
+    }
   };
 
   BufferPool(const std::string &file_prefix, size_t k_param, size_t frame_num, size_t thread_num);
@@ -167,7 +204,14 @@ public:
   Reader get_reader(page_id_t page_id);
   // void flush(frame_id_t frame_id);
   void flush_all();
+  bool read_meta(Meta *meta) requires (!std::is_same_v<Meta, disk::monometa>) {
+    return fstream_.read_meta(meta);
+  }
+  void write_meta(const Meta *meta) requires (!std::is_same_v<Meta, disk::monometa>) {
+    fstream_.write_meta(meta);
+  }
 
+  /*
   // if page not in buffer, returns SIZE_MAX.
   size_t get_pin_count(page_id_t page_id) {
     std::unique_lock lock(bp_latch_);
@@ -176,6 +220,7 @@ public:
     else
       return frames_[it->second].pin_count_.load();
   }
+  */
 
 private:
   alignas(64) std::mutex bp_latch_;
@@ -187,7 +232,7 @@ private:
   TaskScheduler scheduler_;
   // disk::IndexPool page_id_pool_; Duplicated with the pool in fstream_.
   static_assert(std::is_same_v<page_id_t, disk::IndexPool::index_t>);
-  disk::fstream<AlignedPage> fstream_;
+  disk::fstream<AlignedPage, Meta> fstream_;
 
   cntr::vector<Frame> frames_;
   cntr::vector<frame_id_t> free_frames_;

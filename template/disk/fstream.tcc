@@ -35,7 +35,7 @@ void fstream<T, Meta>::close() {
 
 template <class T, class Meta>
 void fstream<T, Meta>::write(index_t index, const T *data) {
-  if(index == 0)
+  if(index == IndexPool::nullpos)
     throw segmentation_fault("Writing nullpos / nullptr");
   std::unique_lock lock(disk_io_latch_);
   size_t offset = SIZE_META + index * SIZE_T;
@@ -47,7 +47,7 @@ void fstream<T, Meta>::write(index_t index, const T *data) {
 
 template <class T, class Meta>
 void fstream<T, Meta>::read(index_t index, T *data) {
-  if(index == 0)
+  if(index == IndexPool::nullpos)
     throw segmentation_fault("Reading nullpos / nullptr");
   std::unique_lock lock(disk_io_latch_);
   size_t offset = SIZE_META + index * SIZE_T;
@@ -84,24 +84,21 @@ void fstream<T, Meta>::reserve_locked(size_t file_size) {
 }
 
 template <class T, class Meta>
-void fstream<T, Meta>::read_meta(Meta *meta) requires (!std::is_same_v<Meta, monometa>) {
+bool fstream<T, Meta>::read_meta(Meta *meta) requires (!std::is_same_v<Meta, monometa>) {
   std::unique_lock lock(disk_io_latch_);
-  if(file_size_ == 0) reserve_locked(SIZE_META);
+  if(file_size_ < SIZE_META) { reserve_locked(SIZE_META); return false; }
   basic_fstream_.seekg(std::ios::beg);
   basic_fstream_.read(reinterpret_cast<char*>(meta), SIZE_META);
+  return true;
 }
 
 template <class T, class Meta>
 void fstream<T, Meta>::write_meta(const Meta *meta) requires (!std::is_same_v<Meta, monometa>) {
   std::unique_lock lock(disk_io_latch_);
-  if(file_size_ == 0) reserve_locked(SIZE_META);
+  if(file_size_ < SIZE_META) reserve_locked(SIZE_META);
   basic_fstream_.seekp(std::ios::beg);
   basic_fstream_.write(reinterpret_cast<const char*>(meta), SIZE_META);
 }
-
-
-
-
 
 }
 

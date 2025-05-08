@@ -144,7 +144,7 @@ TEST_F(BufferPoolTestFixture, PagePinMediumTest) {
   }
 
   for(const auto &writer : writers) {
-    auto pid = writer.page_id();
+    auto pid = writer.id();
     EXPECT_EQ(1, bp.get_pin_count(pid));
   }
 
@@ -154,14 +154,14 @@ TEST_F(BufferPoolTestFixture, PagePinMediumTest) {
   }
 
   for(size_t i = 0; i < frame_cnt / 2; ++i) {
-    auto pid = writers.front().page_id();
+    auto pid = writers.front().id();
     EXPECT_EQ(1, bp.get_pin_count(pid));
     writers.erase(writers.begin());
     EXPECT_EQ(0, bp.get_pin_count(pid));
   }
 
   for(const auto &writer : writers) {
-    auto pid = writer.page_id();
+    auto pid = writer.id();
     EXPECT_EQ(1, bp.get_pin_count(pid));
   }
 
@@ -297,7 +297,7 @@ TEST_F(BufferPoolTestFixture, ConcurrentReaderWriterTest) {
         auto pid = pid_list[iter];
         if(iter % 2 == 0) {
           Reader reader = bp.get_reader(pid);
-          ASSERT_EQ(pid, reader.page_id());
+          ASSERT_EQ(pid, reader.id());
           auto ans = data[pid].c_str();
           auto out = reader.data();
           if(strcmp(ans, out) != 0) {
@@ -306,7 +306,7 @@ TEST_F(BufferPoolTestFixture, ConcurrentReaderWriterTest) {
           }
         } else {
           Writer writer = bp.get_writer(pid);
-          ASSERT_EQ(pid, writer.page_id());
+          ASSERT_EQ(pid, writer.id());
           auto ans = data[pid].c_str();
           auto out = writer.data();
           if(strcmp(ans, out) != 0) {
@@ -343,18 +343,18 @@ TEST_F(BufferPoolTestFixture, CutOffTest) {
     conc::BufferPool<T, sizeof(U)> bp(base_fname, k_dist, frame_cnt, thread_cnt);
     pid1 = bp.alloc();
     auto writer1 = bp.get_writer(pid1);
-    writer1.write(&u);
+    writer1.write(u);
     pid2 = bp.alloc();
     auto writer2 = bp.get_writer(pid2);
-    writer2.write(&t);
+    writer2.write(t);
   }
   {
     conc::BufferPool<T, sizeof(U)> bp(base_fname, k_dist, frame_cnt, thread_cnt);
     auto reader1 = bp.get_reader(pid1);
-    reader1.read(&out_u);
+    reader1.read(out_u);
     ASSERT_EQ(u, out_u);
     auto reader2 = bp.get_reader(pid2);
-    reader2.read(&out_t);
+    reader2.read(out_t);
     ASSERT_EQ(t, out_t);
   }
 }

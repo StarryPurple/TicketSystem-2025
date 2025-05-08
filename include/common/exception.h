@@ -2,6 +2,7 @@
 #define INSOMNIA_EXCEPTION_H
 
 namespace insomnia {
+
 namespace container {
   class container_exception : std::runtime_error {
   public:
@@ -52,7 +53,19 @@ namespace concurrent {
     explicit invalid_pool(const char *detail = "") : concurrent_exception(detail) {}
   };
 }
+
+namespace database {
+  class database_exception : std::runtime_error {
+  public:
+    explicit database_exception(const char *detail = "") : runtime_error(detail) {}
+  };
+
+  class debug_exception : database_exception {
+  public:
+    explicit debug_exception(const char *detail = "") : database_exception(detail) {}
+  };
 }
 
+}
 
 #endif

@@ -44,7 +44,9 @@ public:
   void write(index_t index, const T *data);
   void read(index_t index, T *data);
   void write_meta(const Meta *meta) requires (!std::is_same_v<Meta, monometa>);
-  void read_meta(Meta *meta) requires (!std::is_same_v<Meta, monometa>);
+  // fails if meta data was not initialized.
+  // You can use it to see whether the db file is newly created.
+  bool read_meta(Meta *meta) requires (!std::is_same_v<Meta, monometa>);
   void reserve(size_t file_size);
 
 private:

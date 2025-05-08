@@ -15,6 +15,8 @@ namespace insomnia::disk {
 class IndexPool {
 public:
   using index_t = size_t;
+  static constexpr index_t nullpos = 0;
+
   IndexPool() = default;
   explicit IndexPool(const std::filesystem::path &file) { open(file); };
   ~IndexPool() { close(); }

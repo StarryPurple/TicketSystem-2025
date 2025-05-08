@@ -5,10 +5,10 @@
 
 namespace insomnia::concurrent {
 
-template <class T, size_t align>
-BufferPool<T, align>::Writer::Writer(page_id_t page_id, Frame *frame,
+template <Trivial T, Trivial Meta, size_t align>
+BufferPool<T, Meta, align>::Writer::Writer(page_id_t page_id, Frame *frame,
   policy::LruKReplacer *replacer, std::mutex *bp_latch, TaskScheduler *scheduler,
-  disk::fstream<AlignedPage> *fstream, std::condition_variable *replacer_cv,
+  disk::fstream<AlignedPage, Meta> *fstream, std::condition_variable *replacer_cv,
   std::unique_lock<std::mutex> lock)
     : is_valid_(true),
       page_id_(page_id),
@@ -26,8 +26,8 @@ BufferPool<T, align>::Writer::Writer(page_id_t page_id, Frame *frame,
   frame_->page_latch_.lock(); // should it be outside the buffer pool latch?
 }
 
-template <class T, size_t align>
-BufferPool<T, align>::Writer::Writer(Writer &&other) noexcept
+template <Trivial T, Trivial Meta, size_t align>
+BufferPool<T, Meta, align>::Writer::Writer(Writer &&other) noexcept
     : is_valid_(true),
       page_id_(other.page_id_),
       frame_(other.frame_),
@@ -45,9 +45,9 @@ BufferPool<T, align>::Writer::Writer(Writer &&other) noexcept
   other.replacer_cv_ = nullptr;
 }
 
-template <class T, size_t align>
-typename BufferPool<T, align>::Writer&
-  BufferPool<T, align>::Writer::operator=(Writer &&other) noexcept {
+template <Trivial T, Trivial Meta, size_t align>
+typename BufferPool<T, Meta, align>::Writer&
+  BufferPool<T, Meta, align>::Writer::operator=(Writer &&other) noexcept {
   if(this == &other) return *this;
   drop();
   is_valid_ = other.is_valid_;
@@ -69,8 +69,8 @@ typename BufferPool<T, align>::Writer&
   return *this;
 }
 
-template <class T, size_t align>
-void BufferPool<T, align>::Writer::flush() {
+template <Trivial T, Trivial Meta, size_t align>
+void BufferPool<T, Meta, align>::Writer::flush() {
   if (!frame_->is_dirty_) return;
   auto future = scheduler_->schedule(page_id_, fstream_->write, page_id_, &frame_->page_);
   future.get();  // optimize later
@@ -78,8 +78,8 @@ void BufferPool<T, align>::Writer::flush() {
 }
 
 
-template <class T, size_t align>
-void BufferPool<T, align>::Writer::drop() {
+template <Trivial T, Trivial Meta, size_t align>
+void BufferPool<T, Meta, align>::Writer::drop() {
   if(!is_valid_) return;
   {
     std::unique_lock lock(*bp_latch_);
@@ -100,10 +100,10 @@ void BufferPool<T, align>::Writer::drop() {
 
 /*******************************************************************************************************************/
 
-template <class T, size_t align>
-BufferPool<T, align>::Reader::Reader(page_id_t page_id, Frame *frame,
+template <Trivial T, Trivial Meta, size_t align>
+BufferPool<T, Meta, align>::Reader::Reader(page_id_t page_id, Frame *frame,
   policy::LruKReplacer *replacer, std::mutex *bp_latch, TaskScheduler *scheduler,
-  disk::fstream<AlignedPage> *fstream, std::condition_variable *replacer_cv,
+  disk::fstream<AlignedPage, Meta> *fstream, std::condition_variable *replacer_cv,
   std::unique_lock<std::mutex> lock)
     : is_valid_(true),
       page_id_(page_id),
@@ -121,8 +121,8 @@ BufferPool<T, align>::Reader::Reader(page_id_t page_id, Frame *frame,
   frame_->page_latch_.lock_shared();  // should it be outside the buffer pool latch?
 }
 
-template <class T, size_t align>
-BufferPool<T, align>::Reader::Reader(Reader &&other) noexcept
+template <Trivial T, Trivial Meta, size_t align>
+BufferPool<T, Meta, align>::Reader::Reader(Reader &&other) noexcept
     : is_valid_(true),
       page_id_(other.page_id_),
       frame_(other.frame_),
@@ -140,9 +140,9 @@ BufferPool<T, align>::Reader::Reader(Reader &&other) noexcept
   other.replacer_cv_ = nullptr;
 }
 
-template <class T, size_t align>
-typename BufferPool<T, align>::Reader&
-  BufferPool<T, align>::Reader::operator=(Reader &&other) noexcept {
+template <Trivial T, Trivial Meta, size_t align>
+typename BufferPool<T, Meta, align>::Reader&
+  BufferPool<T, Meta, align>::Reader::operator=(Reader &&other) noexcept {
   if(this == &other) return *this;
   drop();
   is_valid_ = other.is_valid_;
@@ -164,8 +164,8 @@ typename BufferPool<T, align>::Reader&
   return *this;
 }
 
-template <class T, size_t align>
-void BufferPool<T, align>::Reader::flush() {
+template <Trivial T, Trivial Meta, size_t align>
+void BufferPool<T, Meta, align>::Reader::flush() {
   if (!frame_->is_dirty_) return;
   auto future = scheduler_->schedule(page_id_, fstream_->write, page_id_, &frame_->page_);
   future.get();  // optimize later
@@ -173,8 +173,8 @@ void BufferPool<T, align>::Reader::flush() {
 }
 
 
-template <class T, size_t align>
-void BufferPool<T, align>::Reader::drop() {
+template <Trivial T, Trivial Meta, size_t align>
+void BufferPool<T, Meta, align>::Reader::drop() {
   if (!is_valid_) return;
   {
     std::unique_lock lock(*bp_latch_);
@@ -195,8 +195,9 @@ void BufferPool<T, align>::Reader::drop() {
 
 /*******************************************************************************************************************/
 
-template <class T, size_t align>
-BufferPool<T, align>::BufferPool(const std::string &file_prefix, size_t k_param, size_t frame_num, size_t thread_num)
+template <Trivial T, Trivial Meta, size_t align>
+BufferPool<T, Meta, align>::BufferPool(
+  const std::string &file_prefix, size_t k_param, size_t frame_num, size_t thread_num)
     : frame_num_(frame_num),
       replacer_(k_param, frame_num),
       scheduler_(thread_num),
@@ -210,8 +211,8 @@ BufferPool<T, align>::BufferPool(const std::string &file_prefix, size_t k_param,
   }
 }
 
-template <class T, size_t align>
-bool BufferPool<T, align>::dealloc(page_id_t page_id) {
+template <Trivial T, Trivial Meta, size_t align>
+bool BufferPool<T, Meta, align>::dealloc(page_id_t page_id) {
   std::unique_lock lock(bp_latch_);
   if (auto it = page_map_.find(page_id); it != page_map_.end()) {
     if (frames_[it->second].pin_count_.load() > 0)
@@ -228,9 +229,11 @@ bool BufferPool<T, align>::dealloc(page_id_t page_id) {
   return true;
 }
 
-template <class T, size_t align>
-typename BufferPool<T, align>::Reader
-BufferPool<T, align>::get_reader(page_id_t page_id) {
+template <Trivial T, Trivial Meta, size_t align>
+typename BufferPool<T, Meta, align>::Reader
+BufferPool<T, Meta, align>::get_reader(page_id_t page_id) {
+  if(page_id == disk::IndexPool::nullpos)
+    throw disk::segmentation_fault("Reading nullpos");
   frame_id_t frame_id;
   std::unique_lock lock(bp_latch_);
   if (auto it = page_map_.find(page_id); it != page_map_.end()) {
@@ -277,8 +280,10 @@ BufferPool<T, align>::get_reader(page_id_t page_id) {
     std::move(lock));
 }
 
-template <class T, size_t align>
-typename BufferPool<T, align>::Writer BufferPool<T, align>::get_writer(page_id_t page_id) {
+template <Trivial T, Trivial Meta, size_t align>
+typename BufferPool<T, Meta, align>::Writer BufferPool<T, Meta, align>::get_writer(page_id_t page_id) {
+  if(page_id == disk::IndexPool::nullpos)
+    throw disk::segmentation_fault("Writing nullpos");
   frame_id_t frame_id;
   std::unique_lock lock(bp_latch_);
   if (auto it = page_map_.find(page_id); it != page_map_.end()) {
@@ -325,8 +330,8 @@ typename BufferPool<T, align>::Writer BufferPool<T, align>::get_writer(page_id_t
     std::move(lock));
 }
 
-template <class T, size_t align>
-void BufferPool<T, align>::flush_all() {
+template <Trivial T, Trivial Meta, size_t align>
+void BufferPool<T, Meta, align>::flush_all() {
   for (auto &frame : frames_) {
     if (!frame.is_valid_ || !frame.is_dirty_)
       continue;
