@@ -7,13 +7,13 @@
 #include "buffer_pool.h"
 #include "array.h"
 
-using namespace ism;
+using namespace insomnia;
 namespace fs = std::filesystem;
 
 class BufferPoolTestFixture : public ::testing::Test {
 protected:
-  using str_t = cntr::array<char, 60>;
-  using BufferPool = concurrent::BufferPool<str_t>;
+  using str_t = array<char, 60>;
+  using BufferPool = BufferPool<str_t>;
   using Writer = BufferPool::Writer;
   using Reader = BufferPool::Reader;
   const fs::path test_dir{"db_data"};

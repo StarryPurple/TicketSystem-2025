@@ -5,15 +5,15 @@
 
 #include "index_pool.h"
 
-namespace insomnia::database {
+namespace insomnia {
 
 template <class T>
 concept Trivial = std::is_trivially_copyable_v<T>;
 
 class BptNodeBase {
 public:
-  using index_t = disk::IndexPool::index_t;
-  index_t nullpos = disk::IndexPool::nullpos;
+  using index_t = IndexPool::index_t;
+  index_t nullpos = IndexPool::nullpos;
   enum class NodeType { Invalid, Internal, Leaf };
 
   BptNodeBase(NodeType ntype, int max_size, int min_size)

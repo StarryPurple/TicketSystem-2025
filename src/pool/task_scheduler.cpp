@@ -1,6 +1,6 @@
 #include "task_scheduler.h"
 
-namespace insomnia::concurrent {
+namespace insomnia {
 
 TaskScheduler::TaskScheduler(size_t thread_num) : closed(false), task_queues_(thread_num) {
   workers_.reserve(thread_num);
@@ -19,10 +19,10 @@ void TaskScheduler::loop(TaskQueue &queue) {
     std::function<void()> task;
     {
       std::unique_lock lock(queue.latch);
-      queue.cv.wait(lock, [this, &queue] { return closed.load() || !queue.queue.empty(); });
-      if(!queue.queue.empty()) {
-        task = std::move(queue.queue.front());
-        queue.queue.pop();
+      queue.cv.wait(lock, [this, &queue] { return closed.load() || !queue.task_queue.empty(); });
+      if(!queue.task_queue.empty()) {
+        task = std::move(queue.task_queue.front());
+        queue.task_queue.pop();
         has_task = true;
       }
       if(!has_task && closed.load())

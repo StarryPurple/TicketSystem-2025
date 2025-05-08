@@ -3,7 +3,7 @@
 
 #include "unordered_map.h"
 
-namespace insomnia::container {
+namespace insomnia {
 
 template <class KeyT, class ValueT, class Hash, class KeyEqual>
 unordered_map<KeyT, ValueT, Hash, KeyEqual>::unordered_map() {

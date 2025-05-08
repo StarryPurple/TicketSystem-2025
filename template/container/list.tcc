@@ -3,7 +3,7 @@
 
 #include "list.h"
 
-namespace insomnia::container {
+namespace insomnia {
 
 template <class T>
 list<T>::list() {

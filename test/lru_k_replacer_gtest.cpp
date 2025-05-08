@@ -3,7 +3,7 @@
 #include <gtest/gtest.h>
 #include "lru_k_replacer.h"
 
-using ism::policy::LruKReplacer;
+using insomnia::LruKReplacer;
 
 TEST(LRUKReplacerTest, SampleTest) {
   size_t frame;

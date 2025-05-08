@@ -13,7 +13,7 @@
 int main() {
   constexpr int a = 20000, A = 50000;
   auto start = std::chrono::high_resolution_clock().now();
-  ism::cntr::unordered_map<int, int> iumap;
+  insomnia::unordered_map<int, int> iumap;
   for(int i = 1; i < a; ++i)
     iumap.emplace(i, i);
   for(int i = 0; i < A; ++i) {
@@ -76,7 +76,7 @@ int main() {
   end = std::chrono::high_resolution_clock::now();
   std::cout << "std arr: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << std::endl;
   start = std::chrono::high_resolution_clock::now();
-  ism::cntr::array<std::pair<int, int>, A> iarr;
+  insomnia::array<std::pair<int, int>, A> iarr;
   for(int i = 1; i <= a; ++i)
     iarr[i] = {i, i};
   for(int i = 0; i < A; ++i) {

@@ -3,12 +3,12 @@
 
 #include "buffer_pool.h"
 
-namespace insomnia::concurrent {
+namespace insomnia {
 
 template <Trivial T, Trivial Meta, size_t align>
 BufferPool<T, Meta, align>::Writer::Writer(page_id_t page_id, Frame *frame,
-  policy::LruKReplacer *replacer, std::mutex *bp_latch, TaskScheduler *scheduler,
-  disk::fstream<AlignedPage, Meta> *fstream, std::condition_variable *replacer_cv,
+  LruKReplacer *replacer, std::mutex *bp_latch, TaskScheduler *scheduler,
+  fstream<AlignedPage, Meta> *fstream, std::condition_variable *replacer_cv,
   std::unique_lock<std::mutex> lock)
     : is_valid_(true),
       page_id_(page_id),
@@ -102,8 +102,8 @@ void BufferPool<T, Meta, align>::Writer::drop() {
 
 template <Trivial T, Trivial Meta, size_t align>
 BufferPool<T, Meta, align>::Reader::Reader(page_id_t page_id, Frame *frame,
-  policy::LruKReplacer *replacer, std::mutex *bp_latch, TaskScheduler *scheduler,
-  disk::fstream<AlignedPage, Meta> *fstream, std::condition_variable *replacer_cv,
+  LruKReplacer *replacer, std::mutex *bp_latch, TaskScheduler *scheduler,
+  fstream<AlignedPage, Meta> *fstream, std::condition_variable *replacer_cv,
   std::unique_lock<std::mutex> lock)
     : is_valid_(true),
       page_id_(page_id),
@@ -232,8 +232,8 @@ bool BufferPool<T, Meta, align>::dealloc(page_id_t page_id) {
 template <Trivial T, Trivial Meta, size_t align>
 typename BufferPool<T, Meta, align>::Reader
 BufferPool<T, Meta, align>::get_reader(page_id_t page_id) {
-  if(page_id == disk::IndexPool::nullpos)
-    throw disk::segmentation_fault("Reading nullpos");
+  if(page_id == IndexPool::nullpos)
+    throw segmentation_fault("Reading nullpos");
   frame_id_t frame_id;
   std::unique_lock lock(bp_latch_);
   if (auto it = page_map_.find(page_id); it != page_map_.end()) {
@@ -282,8 +282,8 @@ BufferPool<T, Meta, align>::get_reader(page_id_t page_id) {
 
 template <Trivial T, Trivial Meta, size_t align>
 typename BufferPool<T, Meta, align>::Writer BufferPool<T, Meta, align>::get_writer(page_id_t page_id) {
-  if(page_id == disk::IndexPool::nullpos)
-    throw disk::segmentation_fault("Writing nullpos");
+  if(page_id == IndexPool::nullpos)
+    throw segmentation_fault("Writing nullpos");
   frame_id_t frame_id;
   std::unique_lock lock(bp_latch_);
   if (auto it = page_map_.find(page_id); it != page_map_.end()) {

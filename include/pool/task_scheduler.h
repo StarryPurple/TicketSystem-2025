@@ -12,7 +12,7 @@
 #include "queue.h"
 #include "thread_pool.h"
 
-namespace insomnia::concurrent {
+namespace insomnia {
 /**
  * @brief thread pool that supports id-queue.
  */
@@ -35,14 +35,14 @@ public:
 
 private:
   struct TaskQueue {
-    ism::cntr::queue<std::function<void()>> queue;
+    queue<std::function<void()>> task_queue;
     std::mutex latch;
     std::condition_variable cv;
   };
   void loop(TaskQueue &queue);
 
-  ism::cntr::vector<TaskQueue> task_queues_;
-  ism::cntr::vector<std::thread> workers_;
+  vector<TaskQueue> task_queues_;
+  vector<std::thread> workers_;
   std::atomic<bool> closed;
 };
 

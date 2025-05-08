@@ -3,7 +3,7 @@
 
 #include "task_scheduler.h"
 
-namespace insomnia::concurrent {
+namespace insomnia {
 
 template <class F, class... Args>
 auto TaskScheduler::schedule(size_t id, F &&f, Args &&... args)
@@ -17,7 +17,7 @@ auto TaskScheduler::schedule(size_t id, F &&f, Args &&... args)
   auto &queue = task_queues_[idx];
   {
     std::unique_lock lock(queue.latch);
-    queue.queue.emplace([task] { (*task)(); delete task; });
+    queue.task_queue.emplace([task] { (*task)(); delete task; });
   }
   queue.cv.notify_one();
   return future;

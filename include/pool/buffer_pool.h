@@ -10,10 +10,7 @@
 #include "task_scheduler.h"
 
 
-namespace insomnia::concurrent {
-
-template <class T>
-concept Trivial = std::is_trivially_copyable_v<T>;
+namespace insomnia {
 
 template <class T, class Derived, size_t align>
 concept ReadableDerived =
@@ -29,12 +26,12 @@ concept ReadableDerived =
  * @warning remember to check the @align param everytime you derive a type from T.
  * @warning Make sure all Writers/Readers are deconstructed before buffer pool deconstructs.
  */
-template <Trivial T, Trivial Meta = disk::monometa, size_t align = sizeof(T)>
+template <Trivial T, Trivial Meta = monometa, size_t align = sizeof(T)>
 class BufferPool {
 public:
   static constexpr size_t PAGE_SIZE = (align + 4095) / 4096 * 4096;
-  using page_id_t = disk::IndexPool::index_t;
-  using frame_id_t = disk::IndexPool::index_t;
+  using page_id_t = IndexPool::index_t;
+  using frame_id_t = IndexPool::index_t;
   class Writer;
   class Reader;
 
@@ -85,8 +82,8 @@ public:
   public:
     Writer() = default;
     explicit Writer(
-      page_id_t page_id, Frame *frame, policy::LruKReplacer *replacer,
-      std::mutex *bp_latch, TaskScheduler *scheduler, disk::fstream<AlignedPage, Meta> *fstream,
+      page_id_t page_id, Frame *frame, LruKReplacer *replacer,
+      std::mutex *bp_latch, TaskScheduler *scheduler, fstream<AlignedPage, Meta> *fstream,
       std::condition_variable *replacer_cv, std::unique_lock<std::mutex> lock);
     Writer(const Writer&) = delete;
     Writer& operator=(const Writer&) = delete;
@@ -128,10 +125,10 @@ public:
   private:
     page_id_t page_id_;
     Frame *frame_;
-    policy::LruKReplacer *replacer_;
+    LruKReplacer *replacer_;
     std::mutex *bp_latch_;
     TaskScheduler *scheduler_;
-    disk::fstream<AlignedPage, Meta> *fstream_;
+    fstream<AlignedPage, Meta> *fstream_;
     std::condition_variable *replacer_cv_;
     bool is_valid_{false};
 
@@ -147,8 +144,8 @@ public:
   public:
     Reader() = default;
     explicit Reader(
-      page_id_t page_id, Frame *frame, policy::LruKReplacer *replacer,
-      std::mutex *bp_latch, TaskScheduler *scheduler, disk::fstream<AlignedPage, Meta> *fstream,
+      page_id_t page_id, Frame *frame, LruKReplacer *replacer,
+      std::mutex *bp_latch, TaskScheduler *scheduler, fstream<AlignedPage, Meta> *fstream,
       std::condition_variable *replacer_cv, std::unique_lock<std::mutex> lock);
     Reader(const Reader&) = delete;
     Reader& operator=(const Reader&) = delete;
@@ -178,10 +175,10 @@ public:
   private:
     page_id_t page_id_;
     Frame *frame_;
-    policy::LruKReplacer *replacer_;
+    LruKReplacer *replacer_;
     std::mutex *bp_latch_;
     TaskScheduler *scheduler_;
-    disk::fstream<AlignedPage, Meta> *fstream_;
+    fstream<AlignedPage, Meta> *fstream_;
     std::condition_variable *replacer_cv_;
     bool is_valid_{false};
 
@@ -204,10 +201,10 @@ public:
   Reader get_reader(page_id_t page_id);
   // void flush(frame_id_t frame_id);
   void flush_all();
-  bool read_meta(Meta *meta) requires (!std::is_same_v<Meta, disk::monometa>) {
+  bool read_meta(Meta *meta) requires (!std::is_same_v<Meta, monometa>) {
     return fstream_.read_meta(meta);
   }
-  void write_meta(const Meta *meta) requires (!std::is_same_v<Meta, disk::monometa>) {
+  void write_meta(const Meta *meta) requires (!std::is_same_v<Meta, monometa>) {
     fstream_.write_meta(meta);
   }
 
@@ -225,17 +222,17 @@ public:
 private:
   alignas(64) std::mutex bp_latch_;
   alignas(64) std::condition_variable replacer_cv_;
-  cntr::unordered_map<page_id_t, frame_id_t> page_map_;
+  unordered_map<page_id_t, frame_id_t> page_map_;
 
   const size_t frame_num_;
-  policy::LruKReplacer replacer_;
+  LruKReplacer replacer_;
   TaskScheduler scheduler_;
   // disk::IndexPool page_id_pool_; Duplicated with the pool in fstream_.
-  static_assert(std::is_same_v<page_id_t, disk::IndexPool::index_t>);
-  disk::fstream<AlignedPage, Meta> fstream_;
+  static_assert(std::is_same_v<page_id_t, IndexPool::index_t>);
+  fstream<AlignedPage, Meta> fstream_;
 
-  cntr::vector<Frame> frames_;
-  cntr::vector<frame_id_t> free_frames_;
+  vector<Frame> frames_;
+  vector<frame_id_t> free_frames_;
 
 };
 

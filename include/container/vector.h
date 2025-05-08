@@ -1,10 +1,9 @@
 #ifndef INSOMNIA_VECTOR_H
 #define INSOMNIA_VECTOR_H
 
-#include "config.h"
 #include "exception.h"
 
-namespace insomnia::container {
+namespace insomnia {
 template <class T>
 class vector {
 public:

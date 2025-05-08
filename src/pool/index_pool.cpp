@@ -1,6 +1,6 @@
 #include "index_pool.h"
 
-namespace insomnia::disk {
+namespace insomnia {
 
 void IndexPool::open(const std::filesystem::path &file) {
   std::unique_lock lock(latch_);

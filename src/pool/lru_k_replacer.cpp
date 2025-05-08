@@ -1,6 +1,6 @@
 #include "lru_k_replacer.h"
 
-namespace insomnia::policy {
+namespace insomnia {
 
 void LruKReplacer::access(index_t index) {
   {

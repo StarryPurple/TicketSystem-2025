@@ -3,7 +3,7 @@
 
 #include "fstream.h"
 
-namespace insomnia::disk {
+namespace insomnia {
 
 template <class T, class Meta>
 void fstream<T, Meta>::open(const std::filesystem::path &file) {

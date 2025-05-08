@@ -6,11 +6,11 @@
 #include "index_pool.h"
 #include "unordered_map.h"
 
-namespace insomnia::policy {
+namespace insomnia {
 
 class LruKReplacer {
 public:
-  using index_t = disk::IndexPool::index_t;
+  using index_t = IndexPool::index_t;
   using timestamp_t = size_t;
   static constexpr timestamp_t TIME_T_MAX = SIZE_MAX;
 
@@ -86,7 +86,7 @@ private:
   };
 
   const size_t k_, capacity_;
-  cntr::unordered_map<index_t, Slot> hotspot_list_, obscure_list_;
+  unordered_map<index_t, Slot> hotspot_list_, obscure_list_;
   size_t size_{0};
   timestamp_t timestamp_{0};
   std::mutex hotspot_latch_, obscure_latch_;

@@ -5,9 +5,8 @@
 #include "buffer_pool.h"
 #include "exception.h"
 
-namespace insomnia::database {
+namespace insomnia {
 
-namespace db = database;
 
 template <
   Trivial KeyT, Trivial ValueT,
@@ -15,7 +14,7 @@ template <
 >
 class MultiBPlusTree {
   using index_t = BptNodeBase::index_t;
-  static constexpr index_t nullpos = disk::IndexPool::nullpos;
+  static constexpr index_t nullpos = IndexPool::nullpos;
 
   struct KVType {
     KeyT key;
@@ -48,11 +47,11 @@ class MultiBPlusTree {
   using Internal = BptInternalNode<KVType, index_t, KVCompare>;
   using Leaf = BptLeafSingleNode<KVType, KVCompare>;
 
-  using BufferPool = conc::BufferPool<
+  using BufferPoolType = BufferPool<
     Base, index_t, std::max(sizeof(Internal), sizeof(Leaf))
   >;
-  using Reader = typename BufferPool::Reader;
-  using Writer = typename BufferPool::Writer;
+  using Reader = typename BufferPoolType::Reader;
+  using Writer = typename BufferPoolType::Writer;
 
 public:
 
@@ -60,7 +59,7 @@ public:
     size_t k_param, size_t buffer_capacity, size_t thread_num);
   ~MultiBPlusTree() { buffer_pool_.write_meta(&root_); }
 
-  cntr::vector<ValueT> search(const KeyT &key);
+  vector<ValueT> search(const KeyT &key);
 
   bool insert(const KeyT &key, const ValueT &value);
 
@@ -76,10 +75,10 @@ private:
   Writer FindLeafOptim(Reader root_reader, const KVType &kv);
 
   // Pessimistically find the leaf.
-  cntr::vector<Writer> FindLeafPessi(
+  vector<Writer> FindLeafPessi(
     Writer root_writer, const KVType &kv, bool is_insert);
 
-  BufferPool buffer_pool_;
+  BufferPoolType buffer_pool_;
   index_t root_{nullpos};
   KeyCompare key_compare_;
   KeyEqual key_equal_;

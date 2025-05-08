@@ -1,9 +1,7 @@
 #ifndef INSOMNIA_LIST_H
 #define INSOMNIA_LIST_H
 
-#include "config.h"
-
-namespace insomnia::container {
+namespace insomnia {
 
 template <class T>
 class list {

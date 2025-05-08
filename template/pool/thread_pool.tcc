@@ -3,7 +3,7 @@
 
 #include "thread_pool.h"
 
-namespace insomnia::concurrent {
+namespace insomnia {
 
 template <class Func, class... Args>
 auto ThreadPool::enqueue(Func &&func, Args &&... args) -> std::future<std::result_of_t<Func(Args...)>> {

@@ -2,14 +2,10 @@
 #include <gtest/gtest.h>
 #include "thread_pool.h"
 
-namespace ism = insomnia;
-namespace insomnia {
-namespace conc = concurrent;
-namespace cntr = container;
-}
+
 
 TEST(ThreadPoolEnqueue, ThreadPoolTest) {
-  ism::conc::ThreadPool pool(4);
+  insomnia::ThreadPool pool(4);
 
   auto result1 = pool.enqueue([](int answer) {
       std::this_thread::sleep_for(std::chrono::seconds(1));

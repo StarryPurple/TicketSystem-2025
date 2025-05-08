@@ -7,7 +7,7 @@
 
 #include "index_pool.h"
 
-namespace insomnia::disk {
+namespace insomnia {
 /**
  * @brief specialized for metadata placeholder for disk::fstream
  */

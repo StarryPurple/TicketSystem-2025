@@ -11,9 +11,8 @@
 #include "queue.h"
 
 
-namespace insomnia::concurrent {
+namespace insomnia {
 
-namespace cntr = container;
 
 /**
  * @brief a thread pool that can manage multithread tasks.
@@ -30,8 +29,8 @@ public:
   ~ThreadPool();
 
 private:
-  cntr::vector<std::thread> threads_;
-  cntr::queue<std::function<void()>> tasks_;
+  vector<std::thread> threads_;
+  queue<std::function<void()>> tasks_;
   std::mutex global_mutex_;
   std::condition_variable global_cv_;
   bool closed;

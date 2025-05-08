@@ -4,13 +4,13 @@
 #include "bplustree.h"
 
 
-using namespace ism;
+using namespace insomnia;
 namespace fs = std::filesystem;
 
 class MultiBptFixture : public ::testing::Test {
 protected:
-  using str_t = cntr::array<char, 64>;
-  using MultiBpt = database::MultiBPlusTree<str_t, int>;
+  using str_t = array<char, 64>;
+  using MultiBpt = MultiBPlusTree<str_t, int>;
   const fs::path test_dir{"db_data"};
   const fs::path base_fname{test_dir / "multi_bpt_test"};
   const size_t buffer_capa{10}, k_dist{5}, thread_cnt{4};

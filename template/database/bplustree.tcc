@@ -5,7 +5,7 @@
 
 #include "bplustree.h"
 
-namespace insomnia::database {
+namespace insomnia {
 
 template <Trivial KeyT, Trivial ValueT, class KeyCompare, class ValueCompare>
 MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::MultiBPlusTree(
@@ -18,10 +18,10 @@ MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::MultiBPlusTree(
 }
 
 template <Trivial KeyT, Trivial ValueT, class KeyCompare, class ValueCompare>
-container::vector<ValueT>
+vector<ValueT>
 MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::search(const KeyT &key) {
   std::shared_lock root_lock(root_latch_);
-  if(root_ == nullpos) return cntr::vector<ValueT>();
+  if(root_ == nullpos) return vector<ValueT>();
   Reader root_reader = buffer_pool_.get_reader(root_);
   root_lock.unlock();
   Reader leaf_reader = FindLeaf(std::move(root_reader), key);
@@ -36,7 +36,7 @@ MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::search(const KeyT &key) 
     }
     pos = r;
   }
-  cntr::vector<ValueT> result;
+  vector<ValueT> result;
   while(key_equal_(leaf->key(pos).key, key)) {
     result.push_back(leaf->key(pos++).value);
     if(pos == leaf->size()) {
@@ -90,7 +90,7 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(
   root_lock.lock();
   root_writer = buffer_pool_.get_writer(root_);
   root_lock.unlock();
-  cntr::vector<Writer> writers = FindLeafPessi(std::move(root_writer), kv, true);
+  vector<Writer> writers = FindLeafPessi(std::move(root_writer), kv, true);
 
   leaf_writer = std::move(writers.back());
   writers.pop_back();
@@ -215,7 +215,7 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(const KeyT &
   root_lock.lock();
   root_writer = buffer_pool_.get_writer(root_);
   root_lock.unlock();
-  cntr::vector<Writer> writers = FindLeafPessi(std::move(root_writer), kv, false);
+  vector<Writer> writers = FindLeafPessi(std::move(root_writer), kv, false);
 
   leaf_writer = std::move(writers.back());
   writers.pop_back();
@@ -278,10 +278,10 @@ MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::FindLeafOptim(
 }
 
 template <Trivial KeyT, Trivial ValueT, class KeyCompare, class ValueCompare>
-cntr::vector<typename MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::Writer>
+vector<typename MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::Writer>
 MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::FindLeafPessi(
   Writer root_writer, const KVType &kv, bool is_insert) {
-  cntr::vector<Writer> writers;
+  vector<Writer> writers;
   writers.push_back(std::move(root_writer));
   while(!writers.back().template as<Base>()->is_leaf()) {
     Internal *internal = writers.back().template as<Internal>();

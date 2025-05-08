@@ -3,7 +3,6 @@
 
 namespace insomnia {
 
-namespace container {
   class container_exception : std::runtime_error {
   public:
     explicit container_exception(const char *detail = "") : runtime_error(detail) {}
@@ -23,9 +22,7 @@ namespace container {
   public:
     explicit index_out_of_bound(const char *detail = "") : container_exception(detail) {}
   };
-}
 
-namespace disk {
   class disk_exception : std::runtime_error {
   public:
     explicit disk_exception(const char *detail = "") : runtime_error(detail) {}
@@ -35,9 +32,7 @@ namespace disk {
   public:
     explicit segmentation_fault(const char *detail = "") : disk_exception(detail) {}
   };
-}
 
-namespace concurrent {
   class concurrent_exception : std::runtime_error {
   public:
     explicit concurrent_exception(const char *detail = "") : runtime_error(detail) {}
@@ -52,9 +47,7 @@ namespace concurrent {
   public:
     explicit invalid_pool(const char *detail = "") : concurrent_exception(detail) {}
   };
-}
 
-namespace database {
   class database_exception : std::runtime_error {
   public:
     explicit database_exception(const char *detail = "") : runtime_error(detail) {}
@@ -64,7 +57,6 @@ namespace database {
   public:
     explicit debug_exception(const char *detail = "") : database_exception(detail) {}
   };
-}
 
 }
 

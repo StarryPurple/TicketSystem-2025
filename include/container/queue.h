@@ -1,10 +1,9 @@
 #ifndef INSOMNIA_QUEUE_H
 #define INSOMNIA_QUEUE_H
 
-#include "config.h"
 #include "list.h"
 
-namespace insomnia::container {
+namespace insomnia {
 
 template <class T>
 class queue {

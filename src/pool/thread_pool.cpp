@@ -1,6 +1,6 @@
 #include "thread_pool.h"
 
-namespace insomnia::concurrent {
+namespace insomnia {
 
 ThreadPool::ThreadPool(size_t thread_count) : closed(false) {
   for(size_t i = 0; i < thread_count; ++i)

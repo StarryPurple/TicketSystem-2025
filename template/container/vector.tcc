@@ -3,7 +3,7 @@
 
 #include "vector.h"
 
-namespace insomnia::container {
+namespace insomnia {
 
 template <class T>
 vector<T>::vector() {

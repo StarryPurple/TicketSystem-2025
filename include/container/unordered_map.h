@@ -1,11 +1,9 @@
 #ifndef INSOMNIA_UNORDERED_MAP_H
 #define INSOMNIA_UNORDERED_MAP_H
 
-#include <iostream>
-
 #include "exception.h"
 
-namespace insomnia::container {
+namespace insomnia {
 
 template <
   class KeyT,

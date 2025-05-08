@@ -7,7 +7,7 @@
 
 #include "vector.h"
 
-namespace insomnia::disk {
+namespace insomnia {
 
 /**
  * @brief index allocator. Thread-safe. Only supports size_t as index type.
@@ -36,7 +36,7 @@ public:
 private:
   std::fstream pool_;
   index_t capacity_{0}; // 0 reserved for nullptr
-  cntr::vector<index_t> unallocated_; // alignas(64) useful?
+  vector<index_t> unallocated_; // alignas(64) useful?
   alignas(64) mutable std::mutex latch_;
 };
 

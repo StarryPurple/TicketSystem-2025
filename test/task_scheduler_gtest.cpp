@@ -3,7 +3,7 @@
 #include "thread_pool.h"
 #include "task_scheduler.h"
 
-using ism::conc::TaskScheduler;
+using insomnia::TaskScheduler;
 
 TEST(TaskSchedulerTest, SequentialExecution) {
   TaskScheduler pool(4);

@@ -5,7 +5,7 @@
 
 #include "exception.h"
 
-namespace insomnia::container {
+namespace insomnia {
 
 template <class T, size_t size> requires std::is_default_constructible_v<T> && (size > 0)
 class array {
@@ -206,8 +206,5 @@ private:
 };
 
 }
-
-
-#include "array.tcc"
 
 #endif

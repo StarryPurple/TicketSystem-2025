@@ -3,7 +3,7 @@
 
 #include "queue.h"
 
-namespace insomnia::container {
+namespace insomnia {
 
 template <class T>
 queue<T>::queue(size_t capacity) : _data(capacity), _lft(0), _rht(0) {}
