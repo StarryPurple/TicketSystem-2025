@@ -1,6 +1,7 @@
 #ifndef INSOMNIA_BPT_NODES_H
 #define INSOMNIA_BPT_NODES_H
 
+#include <cassert>
 #include <shared_mutex>
 
 #include "index_pool.h"
@@ -54,7 +55,7 @@ public:
   static constexpr size_t SIZE_INFO = sizeof(KeyCompare) + sizeof(KeyT) + sizeof(index_t);
   static constexpr int CAPACITY = std::max(8ul,
     ((SIZE_KV + SIZE_INFO + 4095) / 4096 * 4096 - SIZE_INFO) / SIZE_KV);
-  static constexpr int SPLIT_THRESHOLD = CAPACITY, MERGE_THRESHOLD = CAPACITY * 0.40;
+  static constexpr int SPLIT_THRESHOLD = CAPACITY - 1, MERGE_THRESHOLD = CAPACITY * 0.40;
   BptInternalNode(): BptNodeBase(NodeType::Internal, SPLIT_THRESHOLD, MERGE_THRESHOLD) {}
 
   void set_not_root() { min_size_ = MERGE_THRESHOLD; is_root_ = false; }
@@ -93,6 +94,8 @@ public:
     rhs.size_ = rht_size;
     rhs.rht_ = rht_;
     rht_ = rhs_index;
+    assert(rht_ != 25769836543);
+    assert(rhs.rht_ != 25769836543);
   }
 
   void remove(int pos) {
@@ -137,7 +140,7 @@ public:
   static constexpr size_t SIZE_INFO = sizeof(KeyCompare) + sizeof(KeyT) + sizeof(index_t);
   static constexpr int CAPACITY = std::max(8ul,
     ((sizeof(KeyT) + SIZE_INFO + 4095) / 4096 * 4096 - SIZE_INFO) / sizeof(KeyT));
-  static constexpr int SPLIT_THRESHOLD = CAPACITY, MERGE_THRESHOLD = CAPACITY * 0.40;
+  static constexpr int SPLIT_THRESHOLD = CAPACITY - 1, MERGE_THRESHOLD = CAPACITY * 0.40;
   BptLeafSingleNode() : BptNodeBase(NodeType::Leaf, SPLIT_THRESHOLD, MERGE_THRESHOLD) {}
 
   void set_not_root() { min_size_ = MERGE_THRESHOLD; is_root_ = false; }
@@ -162,16 +165,19 @@ public:
     memmove(key_ + pos + 1, key_ + pos, (size_ - pos) * sizeof(KeyT));
     memcpy(key_ + pos, &key, sizeof(KeyT));
     ++size_;
+    assert(rht_ != 25769836543);
   }
 
   void remove(int pos) {
     if(pos >= size_) throw debug_exception("removing in invalid place");
     memmove(key_ + pos, key_ + pos + 1, (size_ - pos - 1) * sizeof(KeyT));
     --size_;
+    assert(rht_ != 25769836543);
   }
 
   void share(BptLeafSingleNode &rhs, index_t rhs_index) {
     // rhs should be empty.
+    assert(rht_ != 25769836543);
     int lft_size = size_ / 2;
     int rht_size = size_ - lft_size;
     memmove(rhs.key_, key_ + lft_size, rht_size * sizeof(KeyT));
@@ -219,7 +225,7 @@ public:
   static constexpr size_t SIZE_INFO = sizeof(KeyCompare) + sizeof(KeyT) + sizeof(index_t);
   static constexpr int CAPACITY = std::max(8ul,
     ((SIZE_KV + SIZE_INFO + 4095) / 4096 * 4096 - SIZE_INFO) / SIZE_KV);
-  static constexpr int SPLIT_THRESHOLD = CAPACITY, MERGE_THRESHOLD = CAPACITY * 0.40;
+  static constexpr int SPLIT_THRESHOLD = CAPACITY - 1, MERGE_THRESHOLD = CAPACITY * 0.40;
   BptLeafPairNode(): BptNodeBase(NodeType::Leaf, SPLIT_THRESHOLD, MERGE_THRESHOLD) {}
 
   void set_not_root() { min_size_ = MERGE_THRESHOLD; is_root_ = false; }

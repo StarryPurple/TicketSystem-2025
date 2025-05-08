@@ -13,7 +13,7 @@ protected:
   using MultiBpt = MultiBPlusTree<str_t, int>;
   const fs::path test_dir{"db_data"};
   const fs::path base_fname{test_dir / "multi_bpt_test"};
-  const size_t buffer_capa{10}, k_dist{5}, thread_cnt{4};
+  const size_t buffer_capa{1024}, k_dist{3}, thread_cnt{6};
 
   void SetUp() override {
 
@@ -47,16 +47,20 @@ TEST_F(MultiBptFixture, ExampleTest) {
 
 TEST_F(MultiBptFixture, MassInsertTest) {
   MultiBpt bpt(base_fname, k_dist, buffer_capa, thread_cnt);
-  const int range = 1000;
-  for(int i = 1; i <= range; ++i)
+  const int range = 100000;
+  for(int i = 1; i <= range; ++i) {
     bpt.insert(std::to_string(i), i);
+  }
   for(int i = 1; i <= range; ++i) {
     auto list = bpt.search(std::to_string(i));
     ASSERT_EQ(list.size(), 1);
     ASSERT_EQ(list[0], i);
   }
-  for(int i = 1; i <= range; ++i)
+  for(int i = 1; i <= range; ++i) {
     bpt.insert("0", i);
-  auto list = bpt.search("0");
-  ASSERT_EQ(list.size(), range);
+  }
+  {
+    auto list = bpt.search("0");
+    ASSERT_EQ(list.size(), range);
+  }
 }
