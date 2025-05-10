@@ -50,6 +50,10 @@ void BptTest() {
 }
 
 int main() {
-  BptTest();
+  try {
+    BptTest();
+  } catch(insomnia::segmentation_fault &) {
+    std::cout << "WA" << std::endl;
+  }
   return 0;
 }
