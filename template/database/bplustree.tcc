@@ -71,8 +71,8 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(
   while(!writers.back().template as<Base>()->is_leaf()) {
     Internal *internal = writers.back().template as<Internal>();
     int pos = internal->locate_key(kv, kv_compare_);
+    assert(pos < internal->size());
     index_t index = internal->value(pos);
-    assert(index != nullpos);
     writers.push_back(buffer_pool_.get_writer(index));
   }
   Writer leaf_writer = std::move(writers.back());
@@ -156,8 +156,8 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
   while(!writers.back().template as<Base>()->is_leaf()) {
     Internal *internal = writers.back().template as<Internal>();
     int pos = internal->locate_key(kv, kv_compare_);
+    assert(pos < internal->size());
     index_t index = internal->value(pos);
-    assert(index != nullpos);
     writers.push_back(buffer_pool_.get_writer(index));
   }
   Writer leaf_writer = std::move(writers.back());

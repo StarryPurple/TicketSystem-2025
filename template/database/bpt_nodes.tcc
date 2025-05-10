@@ -12,6 +12,8 @@ int BptInternalNode<KeyT, ValueT>::locate_key(
   int lft = 1, rht = size() - 1;
   if(key_compare(key, storage_[lft].key))
     return lft - 1;
+  if(!key_compare(key, storage_[rht].key))
+    return rht;
   while(lft < rht) {
     int mid = (lft + rht) / 2 + 1;
     if(key_compare(key, storage_[mid].key))
@@ -31,6 +33,8 @@ int BptInternalNode<KeyT, ValueT>::locate_any(const T &t, const Compare &compare
   int lft = 1, rht = size() - 1;
   if(compare(t, storage_[lft].key))
     return lft - 1;
+  if(!compare(t, storage_[rht].key))
+    return rht;
   while(lft < rht) {
     int mid = (lft + rht) / 2 + 1;
     if(compare(t, storage_[mid].key))
