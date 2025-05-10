@@ -183,12 +183,12 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
     Internal *parent = parent_writer.template as<Internal>();
     int pos = parent->locate_key(leaf->key(0), kv_compare_);
     if(pos > 0) {
-      assert(parent->size() > pos - 1);
       Writer lft_leaf_writer = buffer_pool_.get_writer(parent->value(pos - 1));
       Leaf *lft_leaf = lft_leaf_writer.template as<Leaf>();
       if(lft_leaf->size() + leaf->size() <= leaf->merge_bound()) {
         lft_leaf->merge(leaf);
         leaf_writer.drop();
+        assert(parent->size() > pos);
         buffer_pool_.dealloc(parent->value(pos));
         parent->remove(pos);
       } else {
@@ -196,7 +196,6 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
         parent->write_key(pos, leaf->key(0));
       }
     } else {
-      assert(parent->size() > pos + 1);
       Writer rht_leaf_writer = buffer_pool_.get_writer(parent->value(pos + 1));
       Leaf *rht_leaf = rht_leaf_writer.template as<Leaf>();
       if(leaf->size() + rht_leaf->size() <= leaf->merge_bound()) {
@@ -221,12 +220,12 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
     Internal *parent = parent_writer.template as<Internal>();
     int pos = parent->locate_key(internal->key(0), kv_compare_);
     if(pos > 0) {
-      assert(parent->size() > pos - 1);
       Writer lft_writer = buffer_pool_.get_writer(parent->value(pos - 1));
       Internal *lft_internal = lft_writer.template as<Internal>();
       if(lft_internal->size() + internal->size() <= internal->merge_bound()) {
         lft_internal->merge(internal);
         internal_writer.drop();
+        assert(parent->size() > pos);
         buffer_pool_.dealloc(parent->value(pos));
         parent->remove(pos);
       } else {
@@ -234,7 +233,6 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
         parent->write_key(pos, internal->key(0));
       }
     } else {
-      assert(parent->size() > pos + 1);
       Writer rht_writer = buffer_pool_.get_writer(parent->value(pos + 1));
       Internal *rht_internal = rht_writer.template as<Internal>();
       if(internal->size() + rht_internal->size() <= internal->merge_bound()) {
