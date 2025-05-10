@@ -188,7 +188,6 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
       if(lft_leaf->size() + leaf->size() <= leaf->merge_bound()) {
         lft_leaf->merge(leaf);
         leaf_writer.drop();
-        assert(parent->size() > pos);
         buffer_pool_.dealloc(parent->value(pos));
         parent->remove(pos);
       } else {
@@ -225,7 +224,6 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
       if(lft_internal->size() + internal->size() <= internal->merge_bound()) {
         lft_internal->merge(internal);
         internal_writer.drop();
-        assert(parent->size() > pos);
         buffer_pool_.dealloc(parent->value(pos));
         parent->remove(pos);
       } else {

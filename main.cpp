@@ -42,7 +42,11 @@ void BptTest() {
       }
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(index, value);
+      try {
+        mul_bpt.remove(index, value);
+      } catch(insomnia::segmentation_fault &) {
+        std::cout << "WA";
+      }
     }
   }
 
@@ -50,10 +54,6 @@ void BptTest() {
 }
 
 int main() {
-  try {
-    BptTest();
-  } catch(insomnia::segmentation_fault &) {
-    std::cout << "WA" << std::endl;
-  }
+  BptTest();
   return 0;
 }
