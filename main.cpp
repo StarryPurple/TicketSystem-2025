@@ -3,7 +3,7 @@
 #include "array.h"
 #include "bplustree.h"
 
-int main() {
+void BptTest() {
   using index_t = insomnia::array<char, 64>;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBPlusTree<index_t, value_t>;
@@ -13,7 +13,7 @@ int main() {
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int k_param = 3;
-  int buffer_cap = 3000;
+  int buffer_cap = 2048;
   int thread_num = 4;
   MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
 
@@ -27,9 +27,6 @@ int main() {
   std::cin >> optcnt;
   for(int i = 1; i <= optcnt; ++i) {
     std::cin >> opt;
-    if(i == 4145) {
-      int a = 0;
-    }
     if(opt[0] == 'i') {
       std::cin >> index >> value;
       mul_bpt.insert(index, value);
@@ -50,6 +47,13 @@ int main() {
   }
 
   // system("diff -bB temp/output.txt temp/answer.txt");
+}
 
+int main() {
+  try {
+    BptTest();
+  } catch(insomnia::debug_exception &) {
+    std::cout << "WA" << std::endl;
+  }
   return 0;
 }
