@@ -13,7 +13,7 @@ void BptTest() {
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int k_param = 3;
-  int buffer_cap = 2048;
+  int buffer_cap = 2400;
   int thread_num = 4;
   MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
 
@@ -52,7 +52,7 @@ void BptTest() {
 int main() {
   try {
     BptTest();
-  } catch(insomnia::debug_exception &) {
+  } catch(insomnia::insomnia_exception &) {
     std::cout << "WA" << std::endl;
   }
   return 0;

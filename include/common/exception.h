@@ -5,9 +5,14 @@ namespace insomnia {
 
 // inherits must be public for catch(std::exception &) to catch.
 
-  class container_exception : public std::runtime_error {
+class insomnia_exception : public std::runtime_error {
+public:
+  explicit insomnia_exception(const char *detail = "") : runtime_error(detail) {}
+};
+
+  class container_exception : public insomnia_exception {
   public:
-    explicit container_exception(const char *detail = "") : runtime_error(detail) {}
+    explicit container_exception(const char *detail = "") : insomnia_exception(detail) {}
   };
 
   class container_is_empty : public container_exception {
@@ -25,9 +30,9 @@ namespace insomnia {
     explicit index_out_of_bound(const char *detail = "") : container_exception(detail) {}
   };
 
-  class disk_exception : public std::runtime_error {
+  class disk_exception : public insomnia_exception {
   public:
-    explicit disk_exception(const char *detail = "") : runtime_error(detail) {}
+    explicit disk_exception(const char *detail = "") : insomnia_exception(detail) {}
   };
 
   class segmentation_fault : public disk_exception {
@@ -35,9 +40,9 @@ namespace insomnia {
     explicit segmentation_fault(const char *detail = "") : disk_exception(detail) {}
   };
 
-  class concurrent_exception : public std::runtime_error {
+  class concurrent_exception : public insomnia_exception {
   public:
-    explicit concurrent_exception(const char *detail = "") : runtime_error(detail) {}
+    explicit concurrent_exception(const char *detail = "") : insomnia_exception(detail) {}
   };
 
   class pool_overflow : public concurrent_exception {
@@ -50,9 +55,9 @@ namespace insomnia {
     explicit invalid_pool(const char *detail = "") : concurrent_exception(detail) {}
   };
 
-  class database_exception : public std::runtime_error {
+  class database_exception : public insomnia_exception {
   public:
-    explicit database_exception(const char *detail = "") : runtime_error(detail) {}
+    explicit database_exception(const char *detail = "") : insomnia_exception(detail) {}
   };
 
   class debug_exception : public database_exception {
