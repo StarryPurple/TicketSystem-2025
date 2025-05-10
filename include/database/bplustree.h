@@ -44,8 +44,8 @@ class MultiBPlusTree {
   };
 
   using Base = BptNodeBase;
-  using Internal = BptInternalNode<KVType, index_t, KVCompare>;
-  using Leaf = BptLeafSingleNode<KVType, KVCompare>;
+  using Internal = BptInternalNode<KVType, index_t>;
+  using Leaf = BptLeafNode<KVType, ValueT>;
 
   using BufferPoolType = BufferPool<
     Base, index_t, std::max(sizeof(Internal), sizeof(Leaf))
@@ -67,6 +67,7 @@ public:
 
 private:
 
+  /*
 
   // search for the leaf.
   Reader FindLeaf(Reader root_reader, const KeyT &key);
@@ -78,8 +79,12 @@ private:
   vector<Writer> FindLeafPessi(
     Writer root_writer, const KVType &kv, bool is_insert);
 
+  void InsertMaxKey(Writer root_writer, const KVType &kv);
+
+  */
+
   BufferPoolType buffer_pool_;
-  index_t root_{nullpos};
+  index_t root_;
   KeyCompare key_compare_;
   KeyEqual key_equal_;
   KVCompare kv_compare_;

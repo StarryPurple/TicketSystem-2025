@@ -9,6 +9,7 @@ int main() {
   using MulBpt_t = insomnia::MultiBPlusTree<index_t, value_t>;
 
   auto dir = std::filesystem::current_path() / "data";
+  // std::filesystem::remove_all(dir);
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int k_param = 3;
@@ -16,11 +17,19 @@ int main() {
   int thread_num = 4;
   MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
 
+  /*
+  freopen("temp/input.txt", "r", stdin);
+  freopen("temp/output.txt", "w", stdout);
+  */
+
   int optcnt, value;
   std::string opt, index;
   std::cin >> optcnt;
   for(int i = 1; i <= optcnt; ++i) {
     std::cin >> opt;
+    if(i == 4145) {
+      int a = 0;
+    }
     if(opt[0] == 'i') {
       std::cin >> index >> value;
       mul_bpt.insert(index, value);
@@ -39,5 +48,8 @@ int main() {
       mul_bpt.remove(index, value);
     }
   }
+
+  // system("diff -bB temp/output.txt temp/answer.txt");
+
   return 0;
 }
