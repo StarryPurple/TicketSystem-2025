@@ -52,7 +52,7 @@ void BptTest() {
 int main() {
   try {
     BptTest();
-  } catch(insomnia::disk_exception &) {
+  } catch(insomnia::segmentation_fault &) {
     std::cout << "WA" << std::endl;
   }
   return 0;
