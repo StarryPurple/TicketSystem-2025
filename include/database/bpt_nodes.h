@@ -59,7 +59,7 @@ public:
 
   const KeyT& key(int pos) const { return storage_[pos].key; }
   const ValueT& value(int pos) const {
-    assert(storage_[pos].value != nullpos);
+    assert(pos < size());
     return storage_[pos].value;
   }
 
