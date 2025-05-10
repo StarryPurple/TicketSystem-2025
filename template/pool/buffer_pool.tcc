@@ -235,8 +235,7 @@ template <Trivial T, Trivial Meta, size_t align>
 typename BufferPool<T, Meta, align>::Reader
 BufferPool<T, Meta, align>::get_reader(page_id_t page_id) {
   if(page_id == IndexPool::nullpos)
-    assert(false);
-    // throw segmentation_fault("Reading nullpos");
+    throw segmentation_fault("Reading nullpos");
   frame_id_t frame_id;
   std::unique_lock lock(bp_latch_);
   if (auto it = page_map_.find(page_id); it != page_map_.end()) {
