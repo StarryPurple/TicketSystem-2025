@@ -13,7 +13,7 @@ int main() {
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int k_param = 3;
-  int buffer_cap = 8192;
+  int buffer_cap = 3000;
   int thread_num = 4;
   MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
 
