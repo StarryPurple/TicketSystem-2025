@@ -20,7 +20,7 @@ void BptTest() {
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int k_param = 3;
-  int buffer_cap = 512;
+  int buffer_cap = 408;
   int thread_num = 4;
   MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
 
