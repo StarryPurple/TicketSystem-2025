@@ -39,7 +39,7 @@ struct hash_pair {
 };
 
 void BptTest() {
-  using index_t = hash_pair;
+  using index_t = insomnia::array<char, 64>;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBPlusTree<index_t, value_t>;
 
