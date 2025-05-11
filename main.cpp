@@ -37,11 +37,7 @@ void BptTest() {
     } else if(opt[0] == 'f') {
       std::cin >> index;
       insomnia::vector<value_t> list;
-      try {
-        list = mul_bpt.search(index);
-      } catch(insomnia::segmentation_fault &) {
-        return;
-      }
+      list = mul_bpt.search(index);
       if(list.empty())
         std::cout << "null" << std::endl;
       else {
