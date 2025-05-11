@@ -70,7 +70,6 @@ void BptInternalNode<KeyT, ValueT>::merge(BptInternalNode *rhs) {
   set_size(tot_size);
   rhs->set_size(0);
   self_check();
-  rhs->self_check();
 }
 
 template <Trivial KeyT, Trivial ValueT>
@@ -80,8 +79,6 @@ void BptInternalNode<KeyT, ValueT>::split(BptInternalNode *rhs) {
     rhs->storage_[i] = storage_[i + lft_size];
   set_size(lft_size);
   rhs->set_size(rht_size);
-  self_check();
-  rhs->self_check();
 }
 
 template <Trivial KeyT, Trivial ValueT>
