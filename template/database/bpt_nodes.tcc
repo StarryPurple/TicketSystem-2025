@@ -52,7 +52,6 @@ void BptInternalNode<KeyT, ValueT>::insert(
     storage_[i] = storage_[i - 1];
   storage_[pos] = Storage(key, value);
   change_size_by(1);
-  self_check();
 }
 
 template <Trivial KeyT, Trivial ValueT>
@@ -60,7 +59,6 @@ void BptInternalNode<KeyT, ValueT>::remove(int pos) {
   for(int i = pos; i < size() - 1; ++i)
     storage_[i] = storage_[i + 1];
   change_size_by(-1);
-  self_check();
 }
 
 template <Trivial KeyT, Trivial ValueT>
