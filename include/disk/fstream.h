@@ -21,6 +21,7 @@ template <class T, class Meta = monometa>
 class fstream {
   static constexpr size_t SIZE_T = sizeof(T);
   static constexpr size_t SIZE_META = (std::is_same_v<Meta, monometa> ? 0 : sizeof(Meta));
+  static_assert(SIZE_T % 4096 == 0 && SIZE_META % 4096 == 0);
 public:
   using index_t = IndexPool::index_t;
 

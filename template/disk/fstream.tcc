@@ -49,19 +49,15 @@ void fstream<T, Meta>::write(index_t index, const T *data) {
 
 template <class T, class Meta>
 void fstream<T, Meta>::read(index_t index, T *data) {
-  assert(basic_fstream_.good());
   if(index == IndexPool::nullpos)
     throw segmentation_fault("Reading nullpos / nullptr");
   std::unique_lock lock(disk_io_latch_);
   size_t offset = SIZE_META + index * SIZE_T;
   // read at the end of file will lead to a std::fstream bad status.
   // consider file_size_ = offset = 0 here.
-  assert(basic_fstream_.good());
   if(offset + SIZE_T > file_size_) reserve_locked(offset * 2 + SIZE_T + SIZE_META);
-  assert(basic_fstream_.good());
   basic_fstream_.seekg(offset, std::ios::beg);
   basic_fstream_.read(reinterpret_cast<char*>(data), SIZE_T);
-  assert(basic_fstream_.good());
 }
 
 template <class T, class Meta>

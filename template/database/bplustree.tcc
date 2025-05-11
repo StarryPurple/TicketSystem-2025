@@ -12,8 +12,18 @@ MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::MultiBPlusTree(
   const std::filesystem::path &name,
   size_t k_param, size_t buffer_capacity, size_t thread_num)
     : buffer_pool_(name, k_param, buffer_capacity, thread_num) {
-  if(!buffer_pool_.read_meta(&root_))
-    root_ = nullpos;
+  RootHolder root_holder;
+  if(buffer_pool_.read_meta(&root_holder))
+    root_ = root_holder.root;
+  else
+    root_ = 0;
+}
+
+template <Trivial KeyT, Trivial ValueT, class KeyCompare, class ValueCompare>
+MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::~MultiBPlusTree() {
+  RootHolder root_holder;
+  root_holder.root = root_;
+  buffer_pool_.write_meta(&root_holder);
 }
 
 template <Trivial KeyT, Trivial ValueT, class KeyCompare, class ValueCompare>

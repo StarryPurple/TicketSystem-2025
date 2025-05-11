@@ -47,8 +47,12 @@ class MultiBPlusTree {
   using Internal = BptInternalNode<KVType, index_t>;
   using Leaf = BptLeafNode<KVType, ValueT>;
 
+  struct alignas(4096) RootHolder {
+    int root;
+  };
+
   using BufferPoolType = BufferPool<
-    Base, index_t, std::max(sizeof(Internal), sizeof(Leaf))
+    Base, RootHolder, std::max(sizeof(Internal), sizeof(Leaf))
   >;
   using Reader = typename BufferPoolType::Reader;
   using Writer = typename BufferPoolType::Writer;
@@ -57,7 +61,7 @@ public:
 
   MultiBPlusTree(const std::filesystem::path &name,
     size_t k_param, size_t buffer_capacity, size_t thread_num);
-  ~MultiBPlusTree() { buffer_pool_.write_meta(&root_); }
+  ~MultiBPlusTree();
 
   vector<ValueT> search(const KeyT &key);
 
