@@ -4,7 +4,7 @@
 #include "bplustree.h"
 
 unsigned long hash(const std::string &str) {
-  unsigned long hash = 5371;
+  unsigned long hash = 1437;
   for(const auto &c : str)
     hash = (hash << 5) + hash + c;
   return hash;
@@ -19,15 +19,13 @@ void BptTest() {
   // std::filesystem::remove_all(dir);
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
-  int k_param = 16;
-  int buffer_cap = 256;
-  int thread_num = 4;
+  int k_param = 4;
+  int buffer_cap = 1024;
+  int thread_num = 1;
   MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
 
-  /*
-  freopen("temp/input.txt", "r", stdin);
-  freopen("temp/output.txt", "w", stdout);
-  */
+  // freopen("temp/input.txt", "r", stdin);
+  // freopen("temp/output.txt", "w", stdout);
 
   int optcnt, value;
   std::string opt, index;
