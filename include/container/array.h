@@ -201,6 +201,16 @@ public:
   const char* c_str() const { return _data; }
   std::string str() { return std::string(_data); }
 
+  unsigned long hash() const {
+    unsigned long hash = 5381;
+    const char *cur = _data;
+    char c;
+    while((c = *cur++)) {
+      hash = (hash << 5) + hash + c;
+    }
+    return hash;
+  }
+
 private:
   char _data[size + 1];
 };
