@@ -194,7 +194,11 @@ public:
   BufferPool& operator=(BufferPool&&) = delete;
   ~BufferPool() { flush_all(); }
   size_t frame_capacity() const { return frame_num_; }
-  page_id_t alloc() { return fstream_.alloc(); }
+  page_id_t alloc() {
+    page_id_t res = fstream_.alloc();
+    assert(res > 0);
+    return res;
+  }
   // fails if this page is still in use by writer/reader.
   bool dealloc(page_id_t page_id);
   Writer get_writer(page_id_t page_id);
