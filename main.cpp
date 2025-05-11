@@ -10,6 +10,16 @@ unsigned long hash(const std::string &str) {
   return hash;
 }
 
+void print_list(insomnia::vector<int> &&list) {
+  if(list.empty())
+    std::cout << "null" << std::endl;
+  else {
+    for(int &val : list)
+      std::cout << val << ' ';
+    std::cout << std::endl;
+  }
+}
+
 void BptTest() {
   using index_t = unsigned long;
   using value_t = int;
@@ -30,31 +40,22 @@ void BptTest() {
   int optcnt, value;
   std::string opt, index;
   std::cin >> optcnt;
-  try {
-    for(int i = 1; i <= optcnt; ++i) {
-      std::cin >> opt;
-      if(opt[0] == 'i') {
-        std::cin >> index >> value;
-        mul_bpt.insert(hash(index), value);
-      } else if(opt[0] == 'f') {
-        std::cin >> index;
-        insomnia::vector<value_t> list = mul_bpt.search(hash(index));
-        if(list.empty())
-          std::cout << "null" << std::endl;
-        else {
-          for(value_t &val : list)
-            std::cout << val << ' ';
-          std::cout << std::endl;
-        }
-      } else if(opt[0] == 'd') {
-        std::cin >> index >> value;
-        mul_bpt.remove(hash(index), value);
+  for(int i = 1; i <= optcnt; ++i) {
+    std::cin >> opt;
+    if(opt[0] == 'i') {
+      std::cin >> index >> value;
+      mul_bpt.insert(hash(index), value);
+    } else if(opt[0] == 'f') {
+      std::cin >> index;
+      try {
+        print_list(mul_bpt.search(hash(index)));
+      } catch(insomnia::segmentation_fault &) {
+        return;
       }
+    } else if(opt[0] == 'd') {
+      std::cin >> index >> value;
+      mul_bpt.remove(hash(index), value);
     }
-  } catch(insomnia::database_exception &) {
-    return;
-  } catch(insomnia::concurrent_exception &) {
-    return;
   }
 
   // system("diff -bB temp/output.txt temp/answer.txt");
