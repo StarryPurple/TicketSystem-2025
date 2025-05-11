@@ -77,10 +77,11 @@ void BptInternalNode<KeyT, ValueT>::split(BptInternalNode *rhs) {
   for(int i = 0; i < rht_size; ++i) {
     rhs->storage_[i].key = storage_[i + lft_size].key;
     rhs->storage_[i].value = storage_[i + lft_size].value;
-    assert(rhs->storage_[i].value != nullpos);
   }
   set_size(lft_size);
   rhs->set_size(rht_size);
+  for(int i = 0; i < lft_size; ++i)
+    assert(storage_[i].value != nullpos);
 }
 
 template <Trivial KeyT, Trivial ValueT>
