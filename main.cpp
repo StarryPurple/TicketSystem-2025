@@ -29,10 +29,19 @@ void BptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(index, value);
+      try {
+        mul_bpt.insert(index, value);
+      } catch(insomnia::segmentation_fault &) {
+        return;
+      }
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      insomnia::vector<value_t> list = mul_bpt.search(index);
+      insomnia::vector<value_t> list;
+      try {
+        list = mul_bpt.search(index);
+      } catch(insomnia::segmentation_fault &) {
+        return;
+      }
       if(list.empty())
         std::cout << "null" << std::endl;
       else {
