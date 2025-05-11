@@ -48,7 +48,6 @@ int BptInternalNode<KeyT, ValueT>::locate_any(const T &t, const Compare &compare
 template <Trivial KeyT, Trivial ValueT>
 void BptInternalNode<KeyT, ValueT>::insert(
   int pos, const KeyT &key, const ValueT &value) {
-  assert(value != nullpos);
   for(int i = size(); i > pos; --i)
     storage_[i] = storage_[i - 1];
   storage_[pos] = Storage(key, value);
@@ -81,6 +80,8 @@ void BptInternalNode<KeyT, ValueT>::split(BptInternalNode *rhs) {
   }
   set_size(lft_size);
   rhs->set_size(rht_size);
+  self_check();
+  rhs->self_check();
 }
 
 template <Trivial KeyT, Trivial ValueT>
