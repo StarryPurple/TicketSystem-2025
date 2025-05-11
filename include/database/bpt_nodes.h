@@ -58,7 +58,7 @@ public:
   void init(int max_size = CAPACITY - 1) { BptNodeBase::init(NodeType::Internal, max_size); }
 
   const KeyT& key(int pos) const { return storage_[pos].key; }
-  const ValueT& value(int pos) const { assert(storage_[pos].value != nullpos);  return storage_[pos].value; }
+  const ValueT& value(int pos) const { return storage_[pos].value; }
 
   void write_key(int pos, const KeyT &key) { storage_[pos].key = key; }
   void write_value(int pos, const ValueT &value) { storage_[pos].value = value; }
