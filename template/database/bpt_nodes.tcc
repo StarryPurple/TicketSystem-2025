@@ -20,8 +20,8 @@ int BptInternalNode<KeyT, ValueT>::locate_key(
       rht = mid - 1;
     else
       lft = mid;
-    assert(lft < size() && rht < size());
   }
+  assert(rht < size());
   return rht;
 }
 
