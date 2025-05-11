@@ -3,12 +3,19 @@
 #include "array.h"
 #include "bplustree.h"
 
-unsigned long hash(const std::string &str) {
+unsigned long hash1(const std::string &str) {
   unsigned long hash = 2166136261;
   for(const auto &c : str) {
     hash ^= c;
     hash *= 16777619;
   }
+  return hash;
+}
+
+unsigned long hash2(const std::string &str) {
+  unsigned long hash = 5371;
+  for(const auto &c : str)
+    hash = (hash << 5) + hash + c;
   return hash;
 }
 
@@ -22,8 +29,13 @@ void print_list(insomnia::vector<int> &&list) {
   }
 }
 
+struct hash_pair {
+  unsigned long h1, h2;
+  hash_pair(const std::string &str) : h1(hash1(str)), h2(hash2(str)) {}
+};
+
 void BptTest() {
-  using index_t = unsigned long;
+  using index_t = hash_pair;
   using value_t = int;
   using MulBpt_t = insomnia::MultiBPlusTree<index_t, value_t>;
 
@@ -46,13 +58,13 @@ void BptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      mul_bpt.insert(hash(index), value);
+      mul_bpt.insert(index, value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      print_list(mul_bpt.search(hash(index)));
+      print_list(mul_bpt.search(index));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(hash(index), value);
+      mul_bpt.remove(index, value);
     }
   }
 
