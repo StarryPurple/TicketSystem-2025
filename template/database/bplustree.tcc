@@ -72,6 +72,7 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(
     Internal *internal = writers.back().template as<Internal>();
     int pos = internal->locate_key(kv, kv_compare_);
     index_t index = internal->value(pos);
+    assert(index != nullpos);
     writers.push_back(buffer_pool_.get_writer(index));
   }
   Writer leaf_writer = std::move(writers.back());

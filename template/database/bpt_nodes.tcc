@@ -21,7 +21,6 @@ int BptInternalNode<KeyT, ValueT>::locate_key(
     else
       lft = mid;
   }
-  assert(rht < size());
   return rht;
 }
 
