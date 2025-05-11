@@ -14,13 +14,13 @@ int BptInternalNode<KeyT, ValueT>::locate_key(
     return lft - 1;
   if(!key_compare(key, storage_[rht].key))
     return rht;
-  assert(lft < size() && rht < size());
   while(lft < rht) {
     int mid = (lft + rht) / 2 + 1;
     if(key_compare(key, storage_[mid].key))
       rht = mid - 1;
     else
       lft = mid;
+    assert(lft < size() && rht < size());
   }
   return rht;
 }
