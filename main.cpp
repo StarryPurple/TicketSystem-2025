@@ -36,22 +36,22 @@ void BptTest() {
       std::cin >> index >> value;
       mul_bpt.insert(hash(index), value);
     } else if(opt[0] == 'f') {
-      try {
-        std::cin >> index;
-        insomnia::vector<value_t> list = mul_bpt.search(hash(index));
-        if(list.empty())
-          std::cout << "null" << std::endl;
-        else {
-          for(value_t &val : list)
-            std::cout << val << ' ';
-          std::cout << std::endl;
-        }
-      } catch(insomnia::segmentation_fault &) {
-        return;
+      std::cin >> index;
+      insomnia::vector<value_t> list = mul_bpt.search(hash(index));
+      if(list.empty())
+        std::cout << "null" << std::endl;
+      else {
+        for(value_t &val : list)
+          std::cout << val << ' ';
+        std::cout << std::endl;
       }
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(hash(index), value);
+      try {
+        mul_bpt.remove(hash(index), value);
+      } catch(insomnia::segmentation_fault &) {
+        return;
+      }
     }
   }
 
