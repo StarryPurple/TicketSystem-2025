@@ -30,6 +30,7 @@ requires requires(const T &t, const KeyT &key, const Compare &compare) {
   { compare(t, key) } -> std::convertible_to<bool>;
 }
 int BptInternalNode<KeyT, ValueT>::locate_any(const T &t, const Compare &compare) const {
+  assert(size() >= 2);
   int lft = 1, rht = size() - 1;
   if(compare(t, storage_[lft].key))
     return lft - 1;
@@ -42,7 +43,6 @@ int BptInternalNode<KeyT, ValueT>::locate_any(const T &t, const Compare &compare
     else
       lft = mid;
   }
-  assert(rht < size());
   return rht;
 }
 
