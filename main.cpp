@@ -32,6 +32,10 @@ void print_list(insomnia::vector<int> &&list) {
 struct hash_pair {
   unsigned long h1, h2;
   hash_pair(const std::string &str) : h1(hash1(str)), h2(hash2(str)) {}
+  bool operator<(const hash_pair &other) const {
+    if(h1 != other.h1) return h1 < other.h1;
+    return h2 < other.h2;
+  }
 };
 
 void BptTest() {
