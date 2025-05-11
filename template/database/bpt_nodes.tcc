@@ -80,7 +80,7 @@ void BptInternalNode<KeyT, ValueT>::split(BptInternalNode *rhs) {
   }
   set_size(lft_size);
   rhs->set_size(rht_size);
-  for(int i = 0; i < lft_size; ++i)
+  for(int i = 0; i < size(); ++i)
     assert(storage_[i].value != nullpos);
 }
 
