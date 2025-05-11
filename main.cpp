@@ -47,11 +47,7 @@ void BptTest() {
       mul_bpt.insert(hash(index), value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      try {
-        print_list(mul_bpt.search(hash(index)));
-      } catch(insomnia::segmentation_fault &) {
-        return;
-      }
+      print_list(mul_bpt.search(hash(index)));
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
       mul_bpt.remove(hash(index), value);
