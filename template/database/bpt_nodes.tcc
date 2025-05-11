@@ -73,6 +73,8 @@ void BptInternalNode<KeyT, ValueT>::merge(BptInternalNode *rhs) {
 
 template <Trivial KeyT, Trivial ValueT>
 void BptInternalNode<KeyT, ValueT>::split(BptInternalNode *rhs) {
+  for(int i = 0; i < size(); ++i)
+    assert(storage_[i].value != nullpos);
   int lft_size = size() / 2, rht_size = size() - lft_size;
   for(int i = 0; i < rht_size; ++i) {
     rhs->storage_[i].key = storage_[i + lft_size].key;
