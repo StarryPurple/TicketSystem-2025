@@ -29,11 +29,7 @@ void BptTest() {
     std::cin >> opt;
     if(opt[0] == 'i') {
       std::cin >> index >> value;
-      try {
-        mul_bpt.insert(index, value);
-      } catch(insomnia::segmentation_fault &) {
-        return;
-      }
+      mul_bpt.insert(index, value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
       insomnia::vector<value_t> list = mul_bpt.search(index);
@@ -46,7 +42,11 @@ void BptTest() {
       }
     } else if(opt[0] == 'd') {
       std::cin >> index >> value;
-      mul_bpt.remove(index, value);
+      try {
+        mul_bpt.remove(index, value);
+      } catch(insomnia::segmentation_fault &) {
+        return;
+      }
     }
   }
 
