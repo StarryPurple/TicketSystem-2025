@@ -44,16 +44,16 @@ void BptTest() {
   using MulBpt_t = insomnia::MultiBPlusTree<index_t, value_t>;
 
   auto dir = std::filesystem::current_path() / "data";
-  // std::filesystem::remove_all(dir);
+  std::filesystem::remove_all(dir);
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int k_param = 4;
-  int buffer_cap = 128;
+  int buffer_cap = 8192;
   int thread_num = 1;
   MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
 
-  // freopen("temp/input.txt", "r", stdin);
-  // freopen("temp/output.txt", "w", stdout);
+  freopen("temp/input.txt", "r", stdin);
+  freopen("temp/output.txt", "w", stdout);
 
   int optcnt, value;
   std::string opt, index;
