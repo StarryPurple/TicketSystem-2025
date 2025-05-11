@@ -38,9 +38,9 @@ protected:
   void change_size_by(int diff) { size_ = size_ + diff; }
 
 private:
-  NodeType ntype_{NodeType::Invalid};
-  int max_size_{0};
-  int size_{0};
+  NodeType ntype_;
+  int max_size_;
+  int size_;
 };
 
 template <Trivial KeyT, Trivial ValueT>
