@@ -13,7 +13,7 @@ void BptTest() {
   std::filesystem::create_directory(dir);
   auto name_base = dir / "test";
   int k_param = 3;
-  int buffer_cap = 2400;
+  int buffer_cap = 1024;
   int thread_num = 4;
   MulBpt_t mul_bpt(name_base, k_param, buffer_cap, thread_num);
 
@@ -32,12 +32,7 @@ void BptTest() {
       mul_bpt.insert(index, value);
     } else if(opt[0] == 'f') {
       std::cin >> index;
-      insomnia::vector<value_t> list;
-      try {
-        list = mul_bpt.search(index);
-      } catch(insomnia::segmentation_fault &) {
-        return;
-      }
+      insomnia::vector<value_t> list = mul_bpt.search(index);
       if(list.empty())
         std::cout << "null" << std::endl;
       else {
