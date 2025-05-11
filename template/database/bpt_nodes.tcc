@@ -80,7 +80,6 @@ void BptInternalNode<KeyT, ValueT>::split(BptInternalNode *rhs) {
   }
   set_size(lft_size);
   rhs->set_size(rht_size);
-  self_check();
 }
 
 template <Trivial KeyT, Trivial ValueT>
