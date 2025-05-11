@@ -4,7 +4,7 @@
 #include "bplustree.h"
 
 unsigned long hash(const std::string &str) {
-  unsigned long hash = 1e9;
+  unsigned long hash = 5371;
   for(const auto &c : str)
     hash = (hash << 5) + hash + c;
   return hash;
