@@ -77,6 +77,11 @@ public:
   void merge(BptInternalNode *rhs);
   void redistribute(BptInternalNode *rhs);
 
+  void self_check() {
+    for(int i = 0; i < size(); ++i)
+      assert(storage_[i].value != nullpos);
+  }
+
 private:
   Storage storage_[CAPACITY];
 };

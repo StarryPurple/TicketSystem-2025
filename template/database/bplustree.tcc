@@ -154,6 +154,7 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
   writers.push_back(buffer_pool_.get_writer(root_));
   while(!writers.back().template as<Base>()->is_leaf()) {
     Internal *internal = writers.back().template as<Internal>();
+    internal->self_check();
     int pos = internal->locate_key(kv, kv_compare_);
     index_t index = internal->value(pos);
     writers.push_back(buffer_pool_.get_writer(index));
@@ -181,6 +182,7 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
     }
     Writer &parent_writer = writers.back();
     Internal *parent = parent_writer.template as<Internal>();
+    parent->self_check();
     int pos = parent->locate_key(leaf->key(0), kv_compare_);
     if(pos > 0) {
       Writer lft_leaf_writer = buffer_pool_.get_writer(parent->value(pos - 1));
