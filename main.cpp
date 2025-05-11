@@ -51,7 +51,7 @@ void BptTest() {
         mul_bpt.remove(hash(index), value);
       }
     }
-  } catch(insomnia::segmentation_fault &) {
+  } catch(insomnia::disk_exception &) {
     return;
   }
 
