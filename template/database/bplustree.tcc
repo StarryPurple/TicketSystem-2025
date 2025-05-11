@@ -29,6 +29,7 @@ vector<ValueT> MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::search(
     int pos = internal->locate_any(key,
       [this] (const KeyT &key, const KVType &kv) { return !key_compare_(kv.key, key); });
     index_t index = internal->value(pos);
+    assert(index != nullpos);
     readers.push_back(buffer_pool_.get_reader(index));
   }
   Reader reader = std::move(readers.back());
