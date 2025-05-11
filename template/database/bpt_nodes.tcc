@@ -9,12 +9,12 @@ template <Trivial KeyT, Trivial ValueT>
 template <class KeyCompare>
 int BptInternalNode<KeyT, ValueT>::locate_key(
   const KeyT &key, const KeyCompare &key_compare) const {
-  assert(size() >= 2);
   int lft = 1, rht = size() - 1;
   if(key_compare(key, storage_[lft].key))
     return lft - 1;
   if(!key_compare(key, storage_[rht].key))
     return rht;
+  assert(lft < size() && rht < size());
   while(lft < rht) {
     int mid = (lft + rht) / 2 + 1;
     if(key_compare(key, storage_[mid].key))
