@@ -27,26 +27,26 @@ void BptTest() {
   std::cin >> optcnt;
   for(int i = 1; i <= optcnt; ++i) {
     std::cin >> opt;
-    try {
-      if(opt[0] == 'i') {
-        std::cin >> index >> value;
-        mul_bpt.insert(index, value);
-      } else if(opt[0] == 'f') {
-        std::cin >> index;
-        insomnia::vector<value_t> list = mul_bpt.search(index);
-        if(list.empty())
-          std::cout << "null" << std::endl;
-        else {
-          for(value_t &val : list)
-            std::cout << val << ' ';
-          std::cout << std::endl;
-        }
-      } else if(opt[0] == 'd') {
-        std::cin >> index >> value;
-        mul_bpt.remove(index, value);
+    if(opt[0] == 'i') {
+      std::cin >> index >> value;
+      mul_bpt.insert(index, value);
+    } else if(opt[0] == 'f') {
+      std::cin >> index;
+      insomnia::vector<value_t> list = mul_bpt.search(index);
+      if(list.empty())
+        std::cout << "null" << std::endl;
+      else {
+        for(value_t &val : list)
+          std::cout << val << ' ';
+        std::cout << std::endl;
       }
-    } catch(insomnia::segmentation_fault &) {
-      return;
+    } else if(opt[0] == 'd') {
+      std::cin >> index >> value;
+      try {
+        mul_bpt.remove(index, value);
+      } catch(insomnia::segmentation_fault &) {
+        return;
+      }
     }
   }
 
