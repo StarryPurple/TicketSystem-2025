@@ -78,6 +78,10 @@ public:
   void redistribute(BptInternalNode *rhs);
 
 private:
+  void self_check() {
+    for(int i = 0; i < size(); ++i)
+      assert(storage_[i].value != nullpos);
+  }
   Storage storage_[CAPACITY];
 };
 
