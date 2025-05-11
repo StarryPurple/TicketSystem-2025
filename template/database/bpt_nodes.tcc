@@ -42,6 +42,7 @@ int BptInternalNode<KeyT, ValueT>::locate_any(const T &t, const Compare &compare
     else
       lft = mid;
   }
+  assert(rht < size());
   return rht;
 }
 
