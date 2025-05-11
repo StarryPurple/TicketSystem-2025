@@ -19,7 +19,7 @@ public:
   enum class NodeType { Invalid, Internal, Leaf };
 
   BptNodeBase() = default;
-  void init(NodeType ntype, int max_size) { ntype_ = ntype; max_size_ = max_size; }
+  void init(NodeType ntype, int max_size) { ntype_ = ntype; max_size_ = max_size; size_ = 0; }
 
   NodeType type() const { return ntype_; }
   bool is_leaf() const { return ntype_ == NodeType::Leaf; }
