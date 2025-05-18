@@ -137,6 +137,7 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(
     int lft_pos = parent->locate_key(internal->key(0), kv_compare_);
     parent->insert(lft_pos + 1, rhs_internal->key(0), rhs_index);
   }
+  // if not root, it must be safe.
   Writer root_writer = std::move(writers.back());
   writers.pop_back();
   Internal *root_internal = root_writer.template as<Internal>();
@@ -261,6 +262,7 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
       }
     }
   }
+  // If not root, it must be safe.
   Writer root_writer = std::move(writers.back());
   writers.pop_back();
   Internal *root_internal = root_writer.template as<Internal>();
