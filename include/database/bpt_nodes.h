@@ -31,6 +31,8 @@ public:
 
   bool is_too_large() const { return size() > max_size(); }
   bool is_too_small() const { return size() < min_size(); }
+  bool is_insert_safe() const { return size() < max_size(); }
+  bool is_remove_safe() const { return size() > min_size(); }
 
 protected:
 

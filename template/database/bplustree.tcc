@@ -39,6 +39,7 @@ vector<ValueT> MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::search(
     int pos = internal->locate_any(key,
       [this] (const KeyT &key, const KVType &kv) { return !key_compare_(kv.key, key); });
     index_t index = internal->value(pos);
+    readers.pop_back(); // Heh. I don't want to modify the main part. Parent reader released.
     readers.push_back(buffer_pool_.get_reader(index));
   }
   Reader reader = std::move(readers.back());
@@ -82,7 +83,10 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::insert(
     Internal *internal = writers.back().template as<Internal>();
     int pos = internal->locate_key(kv, kv_compare_);
     index_t index = internal->value(pos);
-    writers.push_back(buffer_pool_.get_writer(index));
+    Writer writer = buffer_pool_.get_writer(index);
+    if(writer.template as<Base>()->is_insert_safe())
+      writers.clear();
+    writers.push_back(std::move(writer));
   }
   Writer leaf_writer = std::move(writers.back());
   writers.pop_back();
@@ -166,7 +170,10 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
     Internal *internal = writers.back().template as<Internal>();
     int pos = internal->locate_key(kv, kv_compare_);
     index_t index = internal->value(pos);
-    writers.push_back(buffer_pool_.get_writer(index));
+    Writer writer = buffer_pool_.get_writer(index);
+    if(writer.template as<Base>()->is_insert_safe())
+      writers.clear();
+    writers.push_back(std::move(writer));
   }
   Writer leaf_writer = std::move(writers.back());
   writers.pop_back();

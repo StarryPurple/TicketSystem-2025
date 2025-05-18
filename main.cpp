@@ -71,7 +71,6 @@ void BptTest() {
       mul_bpt.remove(index, value);
     }
   }
-
   // system("diff -bB temp/output.txt temp/answer.txt");
 }
 
