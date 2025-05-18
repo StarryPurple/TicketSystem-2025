@@ -171,7 +171,7 @@ bool MultiBPlusTree<KeyT, ValueT, KeyCompare, ValueCompare>::remove(
     int pos = internal->locate_key(kv, kv_compare_);
     index_t index = internal->value(pos);
     Writer writer = buffer_pool_.get_writer(index);
-    if(writer.template as<Base>()->is_insert_safe())
+    if(writer.template as<Base>()->is_remove_safe())
       writers.clear();
     writers.push_back(std::move(writer));
   }
